@@ -1,0 +1,30 @@
+{
+  "name": "GlobeTrotter",
+  "user": "ubuntu",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "context": "."
+  },
+  "install": "./.cursor/scripts/install.sh",
+  "start": "./.cursor/scripts/start.sh",
+  "terminals": [
+    {
+      "name": "api",
+      "command": "cd /workspace/backend && npm run dev"
+    },
+    {
+      "name": "frontend",
+      "command": "cd /workspace/frontend && npm run dev"
+    }
+  ],
+  "ports": [
+    {
+      "name": "frontend",
+      "port": 5173
+    },
+    {
+      "name": "api",
+      "port": 4000
+    }
+  ]
+}
