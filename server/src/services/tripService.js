@@ -66,10 +66,10 @@ export async function requireOwnedTrip(id, userId) {
   return trip;
 }
 
-async function uniqueShareSlug() {
+export async function uniqueShareSlug(db = prisma) {
   for (let attempt = 0; attempt < SLUG_ATTEMPTS; attempt += 1) {
     const shareSlug = createShareSlug();
-    const existing = await prisma.trip.findUnique({
+    const existing = await db.trip.findUnique({
       where: { shareSlug },
       select: { id: true },
     });
@@ -176,6 +176,18 @@ export async function updateTrip(userId, tripId, input) {
     },
   });
 
+  return serializeTripSummary(trip);
+}
+
+export async function updateVisibility(userId, tripId, visibility) {
+  await requireOwnedTrip(tripId, userId);
+  const trip = await prisma.trip.update({
+    where: { id: tripId },
+    data: { visibility },
+    include: {
+      _count: { select: { stops: true } },
+    },
+  });
   return serializeTripSummary(trip);
 }
 

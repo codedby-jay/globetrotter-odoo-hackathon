@@ -16,7 +16,8 @@ import BudgetPage from "./pages/BudgetPage.jsx";
 import TripCalendarPage from "./pages/TripCalendarPage.jsx";
 import CitySearchPage from "./pages/search/CitySearchPage.jsx";
 import ActivitySearchPage from "./pages/search/ActivitySearchPage.jsx";
-import PublicItineraryPage from "./pages/PublicItineraryPage.jsx";
+import PublicItineraryPage from "./pages/share/PublicItineraryPage.jsx";
+import ShareTripPage from "./pages/share/ShareTripPage.jsx";
 import ProfilePage from "./pages/ProfilePage.jsx";
 import AdminPage from "./pages/AdminPage.jsx";
 
@@ -113,6 +114,14 @@ export default function App() {
           element={
             <Guarded>
               <TripCalendarPage />
+            </Guarded>
+          }
+        />
+        <Route
+          path="/trips/:id/share"
+          element={
+            <Guarded>
+              <ShareTripPage />
             </Guarded>
           }
         />

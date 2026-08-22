@@ -10,7 +10,9 @@ import {
   deleteTrip,
   getTrip,
   listTrips,
+  recordOwnerShare,
   updateTrip,
+  updateVisibility,
 } from "../controllers/tripController.js";
 import { createStop, reorderStops } from "../controllers/stopController.js";
 import {
@@ -29,6 +31,7 @@ import {
   reorderStopsSchema,
 } from "../validation/stopSchemas.js";
 import { createExpenseSchema } from "../validation/expenseSchemas.js";
+import { shareEventSchema, visibilitySchema } from "../validation/shareSchemas.js";
 
 const router = Router();
 
@@ -56,6 +59,18 @@ router.post(
   createExpense,
 );
 router.get("/:id/budget", validateParams(tripIdParamsSchema), getBudgetSummary);
+router.patch(
+  "/:id/visibility",
+  validateParams(tripIdParamsSchema),
+  validateBody(visibilitySchema),
+  updateVisibility,
+);
+router.post(
+  "/:id/share-events",
+  validateParams(tripIdParamsSchema),
+  validateBody(shareEventSchema),
+  recordOwnerShare,
+);
 router.get("/:id", validateParams(tripIdParamsSchema), getTrip);
 router.patch(
   "/:id",

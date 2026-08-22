@@ -5,6 +5,7 @@ import {
   Luggage,
   MapPinned,
   Pencil,
+  Share2,
   Trash2,
   Wallet,
 } from "lucide-react";
@@ -12,6 +13,7 @@ import ConfirmDialog from "../components/ConfirmDialog.jsx";
 import TripSubnav from "../components/TripSubnav.jsx";
 import BudgetSummary from "../features/budget/BudgetSummary.jsx";
 import CalendarPreview from "../features/calendar/CalendarPreview.jsx";
+import ShareModal from "../features/share/ShareModal.jsx";
 import StopCard from "../features/itinerary/StopCard.jsx";
 import { explainApiError } from "../lib/api.js";
 import { getBudgetSummary } from "../lib/expensesApi.js";
@@ -28,6 +30,7 @@ export default function ItineraryViewPage() {
   const [imageFailed, setImageFailed] = useState(false);
   const [pendingDelete, setPendingDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [shareOpen, setShareOpen] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -114,6 +117,14 @@ export default function ItineraryViewPage() {
               </Link>
               <button
                 type="button"
+                className="inline-flex items-center gap-1 rounded-lg border border-sand px-3 py-2 text-sm font-medium hover:bg-sand"
+                onClick={() => setShareOpen(true)}
+              >
+                <Share2 size={14} />
+                Share
+              </button>
+              <button
+                type="button"
                 className="inline-flex items-center gap-1 rounded-lg px-3 py-2 text-sm font-medium text-coral hover:bg-sand"
                 onClick={() => setPendingDelete(true)}
               >
@@ -194,6 +205,16 @@ export default function ItineraryViewPage() {
           ))}
         </div>
       )}
+
+      {shareOpen ? (
+        <ShareModal
+          trip={trip}
+          onClose={() => setShareOpen(false)}
+          onSaved={(updated) => {
+            setTrip({ ...trip, ...updated });
+          }}
+        />
+      ) : null}
 
       {pendingDelete ? (
         <ConfirmDialog

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import AuthFormCard, {
   Field,
   buttonClassName,
@@ -8,11 +8,17 @@ import AuthFormCard, {
 import { useAuth } from "../context/AuthContext.jsx";
 import { ApiError } from "../lib/api.js";
 import { fieldError, validateLogin } from "../lib/validation.js";
+import { safeNextPath } from "../lib/navigation.js";
 
 export default function LoginPage() {
   const { login } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const [searchParams] = useSearchParams();
+  const nextPath = safeNextPath(
+    searchParams.get("next") || location.state?.from?.pathname,
+    "/",
+  );
   const [form, setForm] = useState({ email: "", password: "" });
   const [errors, setErrors] = useState({});
   const [formError, setFormError] = useState("");
@@ -37,8 +43,7 @@ export default function LoginPage() {
         email: form.email.trim(),
         password: form.password,
       });
-      const next = location.state?.from?.pathname || "/";
-      navigate(next, { replace: true });
+      navigate(nextPath, { replace: true });
     } catch (error) {
       if (error instanceof ApiError && error.details) {
         setErrors({
@@ -59,7 +64,7 @@ export default function LoginPage() {
       footer={
         <p>
           Need an account?{" "}
-          <Link className="font-medium text-teal" to="/signup">
+          <Link className="font-medium text-teal" to={`/signup${nextPath !== "/" ? `?next=${encodeURIComponent(nextPath)}` : ""}`}>
             Sign up
           </Link>
           {" · "}
