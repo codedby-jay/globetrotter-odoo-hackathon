@@ -75,3 +75,44 @@ export function validateResetPassword({ password, confirmPassword }) {
 export function fieldError(details, field) {
   return details?.find((item) => item.field === field)?.message;
 }
+
+export function validateTrip({
+  name,
+  startDate,
+  endDate,
+  budgetLimit,
+  coverPhotoUrl,
+}) {
+  const errors = {};
+
+  if (!name.trim()) {
+    errors.name = "Trip name is required";
+  }
+
+  if (!startDate) {
+    errors.startDate = "Start date is required";
+  }
+
+  if (!endDate) {
+    errors.endDate = "End date is required";
+  } else if (startDate && endDate < startDate) {
+    errors.endDate = "End date cannot be before start date";
+  }
+
+  if (budgetLimit !== "" && Number(budgetLimit) < 0) {
+    errors.budgetLimit = "Budget cannot be negative";
+  }
+
+  if (coverPhotoUrl.trim()) {
+    try {
+      const parsed = new URL(coverPhotoUrl.trim());
+      if (!["http:", "https:"].includes(parsed.protocol)) {
+        errors.coverPhotoUrl = "Enter a valid image URL";
+      }
+    } catch {
+      errors.coverPhotoUrl = "Enter a valid image URL";
+    }
+  }
+
+  return errors;
+}
