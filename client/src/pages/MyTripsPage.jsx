@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { MapPinned, Plus, Search } from "lucide-react";
+import SearchField from "../ui/SearchField.jsx";
 import ConfirmDialog from "../components/ConfirmDialog.jsx";
 import EmptyState from "../components/EmptyState.jsx";
 import PageLoader from "../components/PageLoader.jsx";
@@ -101,14 +101,16 @@ export default function MyTripsPage() {
         }
       />
 
-      <div className="mt-6 mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex gap-1 rounded-xl bg-sand p-1">
+      <div className="gt-toolbar mt-6 mb-6">
+        <div className="flex gap-1 rounded-xl bg-[linear-gradient(180deg,#efe8db,#e7ddd0)] p-1">
           {FILTERS.map((filter) => (
             <button
               key={filter.id}
               type="button"
-              className={`rounded-lg px-4 py-1.5 text-sm font-semibold ${
-                status === filter.id ? "bg-white text-ink shadow-sm" : "text-muted hover:text-ink"
+              className={`rounded-lg px-4 py-1.5 text-sm font-semibold transition-colors ${
+                status === filter.id
+                  ? "bg-[linear-gradient(180deg,#ffffff,#f7f1e6)] text-ink shadow-sm"
+                  : "text-muted hover:text-ink"
               }`}
               onClick={() => setStatus(filter.id)}
             >
@@ -116,17 +118,12 @@ export default function MyTripsPage() {
             </button>
           ))}
         </div>
-        <label className="relative block w-full sm:max-w-xs">
-          <Search size={16} className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-muted" />
-          <input
-            className="gt-input pl-9"
-            type="search"
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            placeholder="Search trips"
-            aria-label="Search trips"
-          />
-        </label>
+        <SearchField
+          className="sm:max-w-xs"
+          value={query}
+          onChange={setQuery}
+          placeholder="Search trips"
+        />
       </div>
 
       {loading ? <PageLoader label="Loading trips…" /> : null}

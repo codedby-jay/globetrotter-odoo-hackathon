@@ -37,10 +37,10 @@ export default function AppShell() {
 
   return (
     <div className="min-h-svh text-ink">
-      <header className="sticky top-0 z-20 border-b border-line bg-[#fffdf9]/90 backdrop-blur-md">
+      <header className="gt-header sticky top-0 z-20">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3">
           <NavLink to={user ? "/" : "/login"} className="flex items-center gap-2.5">
-            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-teal font-display text-sm font-semibold text-white">
+            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[linear-gradient(145deg,#1a7a72,#0d5757)] font-display text-sm font-semibold text-white shadow-sm">
               GT
             </span>
             <span className="font-display text-lg font-semibold tracking-tight">GlobeTrotter</span>
