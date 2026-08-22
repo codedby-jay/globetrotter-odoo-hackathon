@@ -2,7 +2,7 @@
 
 Personalized multi-city travel planning for the Odoo × LDCE Ahmedabad Hackathon 26.
 
-This repository contains the project foundation, PostgreSQL / Prisma travel graph, JWT authentication, Trip CRUD, live city search, itinerary stops, activities, trip budget / expense tracking, a trip calendar timeline, public trip sharing with copy-trip, and a server-side Odoo export integration.
+This repository contains the project foundation, PostgreSQL / Prisma travel graph, JWT authentication, Trip CRUD, live city search, itinerary stops, activities, trip budget / expense tracking, a trip calendar timeline, public trip sharing with copy-trip, a server-side Odoo export integration, and an optional AI trip assistant.
 
 ## Stack
 
@@ -162,4 +162,73 @@ Odoo endpoints:
 - `GET /api/v1/odoo/status`
 - `POST /api/v1/trips/:id/odoo/test`
 - `POST /api/v1/trips/:id/odoo/export`
+
+## AI trip assistant
+
+Architecture:
+
+```
+React (trip AI Assistant page)
+  → Express `/api/v1/ai` and `/api/v1/trips/:id/ai/*`
+  → aiTripService (PostgreSQL trip + budget + calendar)
+  → aiProvider.generateText (optional LLM)
+```
+
+The browser never calls an AI vendor. `AI_API_KEY` stays on the server.
+
+### Environment variables
+
+Backend only (also listed in `server/.env.example`):
+
+```
+AI_PROVIDER=
+AI_API_KEY=
+AI_MODEL=
+AI_BASE_URL=https://api.openai.com/v1
+AI_TIMEOUT_MS=15000
+```
+
+`AI_PROVIDER` currently supports `openai` (and `openai-compatible` with `AI_BASE_URL`). Example model: `gpt-4o-mini`. Leave the variables empty to run GlobeTrotter without an LLM.
+
+### Provider setup
+
+1. Create an API key with your OpenAI-compatible provider.
+2. Set `AI_PROVIDER=openai`, `AI_API_KEY`, and `AI_MODEL` in root `.env` and `server/.env`.
+3. Restart Express. Do not put the key in React or Git.
+
+### Endpoints (JWT required, trip owner only)
+
+- `GET /api/v1/ai/status` — `{ configured, provider, model, message }` (never returns the key)
+- `POST /api/v1/trips/:id/ai/chat` — `{ message }` → `{ answer, suggestions, budgetImpact, source }`
+- `POST /api/v1/trips/:id/ai/suggestions` — optional `{ preferences: { style, interests, budgetPriority } }`
+- `POST /api/v1/trips/:id/ai/analyze` — empty days, conflicts, budget, destinations without activities
+
+`401` unauthenticated, `403` not owner, `404` missing trip, `400` validation / AI not used as a crash, `502` provider down on chat/suggestions.
+
+Budget totals (`totalSpent`, `remaining`, `percentageUsed`) are computed from `TripExpense` in Express and passed into the model. The assistant must not invent those figures.
+
+The assistant never writes trips, stops, activities, or expenses.
+
+### Usage
+
+Open a trip → **AI Assistant** (`/trips/:id/ai`). Ask a question, or use Suggest activities / Optimize my budget / Analyze itinerary / Find empty days.
+
+### Fallback (no key, or analysis when the model fails)
+
+Deterministic **Smart analysis** still:
+
+- Uses recorded budget remaining
+- Flags empty days, overloaded days, and time overlaps (same rules as the trip calendar)
+- Flags destinations with no activities and unscheduled activities
+- Suggests the existing in-app activity catalog
+
+The page shows “AI Assistant is not configured yet.” when `AI_API_KEY` is missing. Other GlobeTrotter features keep working.
+
+### Security
+
+- JWT + trip ownership on every AI route
+- No API keys in the client bundle or API JSON
+- Provider timeouts and redacted error logs
+- Prompts include only trip planning fields (no passwords, no other users)
+
 
