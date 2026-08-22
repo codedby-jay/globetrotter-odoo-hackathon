@@ -1,7 +1,7 @@
 import { MapPin, Plus } from "lucide-react";
 import { cityCoverSrc } from "../../lib/travelArt.js";
 import Button from "../../ui/Button.jsx";
-import CoverImage from "../CoverImage.jsx";
+import CoverImage from "../../components/CoverImage.jsx";
 
 export default function CityResultCard({
   city,
