@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useLocation, useParams } from "react-router-dom";
 import { MapPinned, Plus } from "lucide-react";
 import ConfirmDialog from "../components/ConfirmDialog.jsx";
 import TripForm from "../components/TripForm.jsx";
@@ -14,6 +14,7 @@ import { fieldError, validateTrip } from "../lib/validation.js";
 
 export default function ItineraryBuilderPage() {
   const { id } = useParams();
+  const location = useLocation();
   const [trip, setTrip] = useState(null);
   const [values, setValues] = useState(null);
   const [errors, setErrors] = useState({});
@@ -28,6 +29,7 @@ export default function ItineraryBuilderPage() {
   const [deleting, setDeleting] = useState(false);
   const [reordering, setReordering] = useState(false);
   const [stopError, setStopError] = useState("");
+  const [addedNotice, setAddedNotice] = useState(location.state?.addedDestination || "");
 
   async function loadTrip() {
     const data = await getTrip(id);
@@ -245,18 +247,22 @@ export default function ItineraryBuilderPage() {
       <section className="space-y-4">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <h2 className="text-lg font-semibold">Your itinerary</h2>
-          <button
-            type="button"
+          <Link
+            to={`/search/cities?tripId=${id}`}
             className="inline-flex items-center justify-center gap-2 rounded-lg bg-coral px-4 py-2 text-sm font-medium text-white hover:opacity-90"
-            onClick={() => {
-              setModalError("");
-              setModal({});
-            }}
           >
             <Plus size={16} />
             Add destination
-          </button>
+          </Link>
         </div>
+        {addedNotice ? (
+          <p className="rounded-xl bg-cream px-4 py-3 text-sm text-teal-dark">
+            {addedNotice} was added to this itinerary.{" "}
+            <Link className="font-medium text-teal" to={`/search/cities?tripId=${id}`}>
+              Add another destination
+            </Link>
+          </p>
+        ) : null}
         {stopError ? <p className="text-sm text-coral">{stopError}</p> : null}
         {stops.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-sand bg-white px-6 py-12 text-center">
@@ -265,6 +271,12 @@ export default function ItineraryBuilderPage() {
             <p className="mt-1 text-sm text-muted">
               Search for a city and add your first destination.
             </p>
+            <Link
+              to={`/search/cities?tripId=${id}`}
+              className="mt-4 inline-flex rounded-lg bg-coral px-4 py-2 text-sm font-medium text-white hover:opacity-90"
+            >
+              + Add destination
+            </Link>
           </div>
         ) : (
           <div className="space-y-3">

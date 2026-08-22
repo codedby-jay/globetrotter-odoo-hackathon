@@ -21,6 +21,31 @@ export class ApiError extends Error {
   }
 }
 
+export function explainApiError(error, fallback = "Something went wrong") {
+  if (error instanceof TypeError) {
+    return "Network error. Check your connection and try again.";
+  }
+  if (!(error instanceof ApiError)) {
+    return error?.message || fallback;
+  }
+  if (error.status === 401) {
+    return "Please log in to continue.";
+  }
+  if (error.status === 403) {
+    return "You do not have access to this trip.";
+  }
+  if (error.status === 404) {
+    return "That trip could not be found.";
+  }
+  if (error.status === 400) {
+    return error.message || "Check the dates and try again.";
+  }
+  if (error.status >= 500) {
+    return "The server is unavailable. Please try again shortly.";
+  }
+  return error.message || fallback;
+}
+
 export async function apiRequest(path, { method = "GET", body, token } = {}) {
   const headers = {
     Accept: "application/json",

@@ -1,16 +1,18 @@
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { LoaderCircle, Plane } from "lucide-react";
 import AddStopModal from "../../features/itinerary/AddStopModal.jsx";
 import CityResultCard from "../../features/search/CityResultCard.jsx";
 import CitySearchBox from "../../features/search/CitySearchBox.jsx";
 import TripSubnav from "../../components/TripSubnav.jsx";
 import useDebouncedValue from "../../hooks/useDebouncedValue.js";
-import { getTrip } from "../../lib/tripsApi.js";
+import { explainApiError } from "../../lib/api.js";
+import { formatDateRange } from "../../lib/dates.js";
+import { listTrips, getTrip } from "../../lib/tripsApi.js";
 import { createStop, searchCities } from "../../lib/stopsApi.js";
 
 export default function CitySearchPage() {
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const tripId = searchParams.get("tripId");
   const navigate = useNavigate();
   const [query, setQuery] = useState("");
@@ -18,13 +20,20 @@ export default function CitySearchPage() {
   const [searching, setSearching] = useState(false);
   const [error, setError] = useState("");
   const [trip, setTrip] = useState(null);
+  const [trips, setTrips] = useState([]);
   const [selectedCity, setSelectedCity] = useState(null);
+  const [pickerCity, setPickerCity] = useState(null);
   const [saving, setSaving] = useState(false);
   const [modalError, setModalError] = useState("");
+  const [notice, setNotice] = useState("");
   const debouncedQuery = useDebouncedValue(query, 400);
 
   useEffect(() => {
     if (!tripId) {
+      setTrip(null);
+      listTrips()
+        .then((data) => setTrips(data.trips || []))
+        .catch(() => setTrips([]));
       return undefined;
     }
     let cancelled = false;
@@ -32,11 +41,13 @@ export default function CitySearchPage() {
       .then((data) => {
         if (!cancelled) {
           setTrip(data.trip);
+          setError("");
         }
       })
       .catch((err) => {
         if (!cancelled) {
-          setError(err.message || "Unable to load trip");
+          setTrip(null);
+          setError(explainApiError(err, "Unable to load that trip"));
         }
       });
     return () => {
@@ -62,7 +73,7 @@ export default function CitySearchPage() {
       })
       .catch((err) => {
         if (!cancelled) {
-          setError(err.message || "Unable to search cities");
+          setError(explainApiError(err, "Unable to search cities"));
           setResults([]);
         }
       })
@@ -82,18 +93,48 @@ export default function CitySearchPage() {
     [trip],
   );
 
+  function handleResultClick(city) {
+    setNotice("");
+    setModalError("");
+    if (tripId && trip) {
+      setSelectedCity(city);
+      return;
+    }
+    if (tripId && !trip) {
+      setError(error || "Open a trip first to add this destination.");
+      return;
+    }
+    setPickerCity(city);
+  }
+
+  function chooseTrip(nextTrip) {
+    setSearchParams({ tripId: nextTrip.id });
+    setTrip(nextTrip);
+    setPickerCity(null);
+    setSelectedCity(pickerCity);
+  }
+
   async function handleAdd(payload) {
-    if (!tripId) {
+    const targetTripId = tripId || trip?.id;
+    if (!targetTripId) {
+      setModalError("Open a trip first to add this destination.");
       return;
     }
     setSaving(true);
     setModalError("");
     try {
-      await createStop(tripId, payload);
+      await createStop(targetTripId, {
+        cityId: payload.cityId,
+        startDate: payload.startDate,
+        endDate: payload.endDate,
+      });
+      const cityName = selectedCity?.name || "Destination";
       setSelectedCity(null);
-      navigate(`/trips/${tripId}/edit`);
+      navigate(`/trips/${targetTripId}/edit`, {
+        state: { addedDestination: cityName },
+      });
     } catch (err) {
-      setModalError(err.message || "Unable to add destination");
+      setModalError(explainApiError(err, "Unable to add this destination"));
       throw err;
     } finally {
       setSaving(false);
@@ -115,14 +156,22 @@ export default function CitySearchPage() {
         </p>
         {trip ? (
           <p className="mt-3 text-sm font-medium text-teal-dark">
-            Add destination to {trip.name}
+            Add destination to {trip.name} ({formatDateRange(trip.startDate, trip.endDate)})
           </p>
-        ) : null}
+        ) : (
+          <p className="mt-3 text-sm text-muted">
+            Open a trip first to add this destination, or choose a trip after you
+            tap Add to trip.
+          </p>
+        )}
         <div className="mt-6">
           <CitySearchBox value={query} onChange={setQuery} />
         </div>
       </div>
 
+      {notice ? (
+        <p className="rounded-xl bg-cream px-4 py-3 text-sm text-teal-dark">{notice}</p>
+      ) : null}
       {searching ? (
         <p className="flex items-center gap-2 text-sm text-muted">
           <LoaderCircle size={16} className="animate-spin" />
@@ -143,7 +192,7 @@ export default function CitySearchPage() {
           <Plane className="mx-auto mb-3 text-teal" size={32} />
           <p className="font-medium">Your journey starts here</p>
           <p className="mt-1 text-sm text-muted">
-            Search for a city and add your first destination.
+            Search for a city and add it to a trip.
           </p>
         </div>
       ) : null}
@@ -153,22 +202,68 @@ export default function CitySearchPage() {
           <CityResultCard
             key={city.id}
             city={city}
+            actionLabel="Add to trip"
             warning={
               existingCityIds.includes(city.id)
-                ? "This city is already on the trip"
+                ? "This city is already on the trip. You can still add another stay."
                 : null
             }
-            onAdd={tripId ? setSelectedCity : undefined}
-            actionLabel="+ Add to trip"
+            onAdd={handleResultClick}
           />
         ))}
       </div>
+
+      {pickerCity ? (
+        <div className="fixed inset-0 z-40 flex items-end justify-center bg-ink/40 p-0 sm:items-center sm:p-4">
+          <div className="w-full max-w-lg rounded-t-2xl bg-white p-5 shadow-lg sm:rounded-2xl sm:p-6">
+            <h2 className="text-lg font-semibold">Add {pickerCity.name} to a trip</h2>
+            <p className="mt-1 text-sm text-muted">
+              Open a trip first to add this destination.
+            </p>
+            <div className="mt-4 max-h-72 space-y-2 overflow-y-auto">
+              {trips.length === 0 ? (
+                <p className="text-sm text-muted">You do not have any trips yet.</p>
+              ) : (
+                trips.map((item) => (
+                  <button
+                    key={item.id}
+                    type="button"
+                    className="flex w-full items-center justify-between rounded-xl border border-sand px-3 py-3 text-left hover:bg-cream"
+                    onClick={() => chooseTrip(item)}
+                  >
+                    <span className="font-medium">{item.name}</span>
+                    <span className="text-xs text-muted">
+                      {formatDateRange(item.startDate, item.endDate)}
+                    </span>
+                  </button>
+                ))
+              )}
+            </div>
+            <div className="mt-4 flex flex-wrap justify-end gap-2">
+              <button
+                type="button"
+                className="rounded-lg px-3 py-2 text-sm font-medium hover:bg-sand"
+                onClick={() => setPickerCity(null)}
+              >
+                Cancel
+              </button>
+              <Link
+                to="/trips/new"
+                className="rounded-lg bg-teal px-3 py-2 text-sm font-medium text-white hover:bg-teal-dark"
+              >
+                Create a trip
+              </Link>
+            </div>
+          </div>
+        </div>
+      ) : null}
 
       {selectedCity && trip ? (
         <AddStopModal
           trip={trip}
           existingCityIds={existingCityIds}
           initialStop={{ city: selectedCity }}
+          lockCity
           onClose={() => setSelectedCity(null)}
           onSubmit={handleAdd}
           submitting={saving}
