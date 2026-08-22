@@ -135,3 +135,31 @@ export function validateTrip({
 
   return errors;
 }
+
+export function validateActivitySchedule({
+  scheduledDate,
+  startTime,
+  endTime,
+  cost,
+  stopStart,
+  stopEnd,
+}) {
+  const errors = {};
+  if (!scheduledDate) {
+    errors.scheduledDate = "Date is required";
+  } else if (stopStart && scheduledDate < stopStart) {
+    errors.scheduledDate = "Date must fall inside the destination dates";
+  } else if (stopEnd && scheduledDate > stopEnd) {
+    errors.scheduledDate = "Date must fall inside the destination dates";
+  }
+
+  if (startTime && endTime && endTime <= startTime) {
+    errors.endTime = "End time must be after start time";
+  }
+
+  if (cost !== "" && Number(cost) < 0) {
+    errors.cost = "Cost cannot be negative";
+  }
+
+  return errors;
+}

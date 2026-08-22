@@ -4,6 +4,7 @@ import { errorHandler } from "./middleware/errorHandler.js";
 import authRouter from "./routes/auth.js";
 import healthRouter from "./routes/health.js";
 import searchRouter from "./routes/search.js";
+import stopActivitiesRouter from "./routes/stopActivities.js";
 import stopsRouter from "./routes/stops.js";
 import tripsRouter from "./routes/trips.js";
 
@@ -22,6 +23,7 @@ export function createApp() {
   app.use("/api/v1/auth", authRouter);
   app.use("/api/v1/trips", tripsRouter);
   app.use("/api/v1/stops", stopsRouter);
+  app.use("/api/v1/stop-activities", stopActivitiesRouter);
   app.use("/api/v1/search", searchRouter);
 
   app.use((req, res) => {

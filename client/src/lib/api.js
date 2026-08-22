@@ -35,10 +35,14 @@ export function explainApiError(error, fallback = "Something went wrong") {
     return "You do not have access to this trip.";
   }
   if (error.status === 404) {
-    return "That trip could not be found.";
+    return error.message || "That trip could not be found.";
   }
   if (error.status === 400) {
-    return error.message || "Check the dates and try again.";
+    const detail = error.details?.find((item) => item.message)?.message;
+    if (error.message && error.message !== "Validation failed") {
+      return error.message;
+    }
+    return detail || error.message || "Check the dates and try again.";
   }
   if (error.status >= 500) {
     return "The server is unavailable. Please try again shortly.";
