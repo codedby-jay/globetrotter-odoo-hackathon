@@ -4,6 +4,7 @@ export default function TripSubnav({ tripId }) {
   const items = [
     { to: `/trips/${tripId}`, label: "View", end: true },
     { to: `/trips/${tripId}/edit`, label: "Builder" },
+    { to: `/trips/${tripId}/budget`, label: "Budget" },
     { to: `/search/cities?tripId=${tripId}`, label: "Destinations" },
   ];
 

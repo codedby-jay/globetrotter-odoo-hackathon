@@ -163,3 +163,32 @@ export function validateActivitySchedule({
 
   return errors;
 }
+
+const EXPENSE_CATEGORIES = ["TRANSPORT", "STAY", "ACTIVITY", "MEALS", "OTHER"];
+const CURRENCY_PATTERN = /^[A-Z]{3}$/;
+
+export function validateExpense({ description, category, amount, currency, expenseDate }) {
+  const errors = {};
+  if (!String(description || "").trim()) {
+    errors.description = "Description is required";
+  }
+  if (!EXPENSE_CATEGORIES.includes(category)) {
+    errors.category = "Choose a valid category";
+  }
+  if (amount === "" || amount == null) {
+    errors.amount = "Amount is required";
+  } else if (!Number.isFinite(Number(amount))) {
+    errors.amount = "Amount must be a number";
+  } else if (Number(amount) < 0) {
+    errors.amount = "Amount cannot be negative";
+  }
+  if (!currency || !CURRENCY_PATTERN.test(String(currency).toUpperCase())) {
+    errors.currency = "Currency must be a 3-letter code such as USD";
+  }
+  if (!expenseDate) {
+    errors.expenseDate = "Date is required";
+  } else if (!/^\d{4}-\d{2}-\d{2}$/.test(expenseDate)) {
+    errors.expenseDate = "Use a date in YYYY-MM-DD format";
+  }
+  return errors;
+}

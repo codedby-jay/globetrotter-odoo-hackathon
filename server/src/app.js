@@ -2,6 +2,7 @@ import cors from "cors";
 import express from "express";
 import { errorHandler } from "./middleware/errorHandler.js";
 import authRouter from "./routes/auth.js";
+import expensesRouter from "./routes/expenses.js";
 import healthRouter from "./routes/health.js";
 import searchRouter from "./routes/search.js";
 import stopActivitiesRouter from "./routes/stopActivities.js";
@@ -22,6 +23,7 @@ export function createApp() {
   app.use("/api", healthRouter);
   app.use("/api/v1/auth", authRouter);
   app.use("/api/v1/trips", tripsRouter);
+  app.use("/api/v1/expenses", expensesRouter);
   app.use("/api/v1/stops", stopsRouter);
   app.use("/api/v1/stop-activities", stopActivitiesRouter);
   app.use("/api/v1/search", searchRouter);

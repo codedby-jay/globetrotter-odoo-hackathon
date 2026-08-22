@@ -14,6 +14,11 @@ import {
 } from "../controllers/tripController.js";
 import { createStop, reorderStops } from "../controllers/stopController.js";
 import {
+  createExpense,
+  getBudgetSummary,
+  listExpenses,
+} from "../controllers/expenseController.js";
+import {
   createTripSchema,
   listTripsQuerySchema,
   tripIdParamsSchema,
@@ -23,6 +28,7 @@ import {
   createStopSchema,
   reorderStopsSchema,
 } from "../validation/stopSchemas.js";
+import { createExpenseSchema } from "../validation/expenseSchemas.js";
 
 const router = Router();
 
@@ -42,6 +48,14 @@ router.put(
   validateBody(reorderStopsSchema),
   reorderStops,
 );
+router.get("/:id/expenses", validateParams(tripIdParamsSchema), listExpenses);
+router.post(
+  "/:id/expenses",
+  validateParams(tripIdParamsSchema),
+  validateBody(createExpenseSchema),
+  createExpense,
+);
+router.get("/:id/budget", validateParams(tripIdParamsSchema), getBudgetSummary);
 router.get("/:id", validateParams(tripIdParamsSchema), getTrip);
 router.patch(
   "/:id",
