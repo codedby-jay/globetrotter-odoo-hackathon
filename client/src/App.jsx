@@ -14,7 +14,7 @@ import ItineraryViewPage from "./pages/ItineraryViewPage.jsx";
 import ItineraryBuilderPage from "./pages/ItineraryBuilderPage.jsx";
 import BudgetPage from "./pages/BudgetPage.jsx";
 import CalendarPage from "./pages/CalendarPage.jsx";
-import CitySearchPage from "./pages/CitySearchPage.jsx";
+import CitySearchPage from "./pages/search/CitySearchPage.jsx";
 import ActivitySearchPage from "./pages/ActivitySearchPage.jsx";
 import PublicItineraryPage from "./pages/PublicItineraryPage.jsx";
 import ProfilePage from "./pages/ProfilePage.jsx";

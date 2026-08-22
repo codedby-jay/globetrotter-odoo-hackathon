@@ -3,6 +3,8 @@ import express from "express";
 import { errorHandler } from "./middleware/errorHandler.js";
 import authRouter from "./routes/auth.js";
 import healthRouter from "./routes/health.js";
+import searchRouter from "./routes/search.js";
+import stopsRouter from "./routes/stops.js";
 import tripsRouter from "./routes/trips.js";
 
 export function createApp() {
@@ -19,6 +21,8 @@ export function createApp() {
   app.use("/api", healthRouter);
   app.use("/api/v1/auth", authRouter);
   app.use("/api/v1/trips", tripsRouter);
+  app.use("/api/v1/stops", stopsRouter);
+  app.use("/api/v1/search", searchRouter);
 
   app.use((req, res) => {
     res.status(404).json({ error: "Not found", path: req.path });

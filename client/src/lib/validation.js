@@ -76,6 +76,25 @@ export function fieldError(details, field) {
   return details?.find((item) => item.field === field)?.message;
 }
 
+export function validateStopDates({ startDate, endDate, tripStart, tripEnd }) {
+  const errors = {};
+  if (!startDate) {
+    errors.startDate = "Start date is required";
+  }
+  if (!endDate) {
+    errors.endDate = "End date is required";
+  } else if (startDate && endDate < startDate) {
+    errors.endDate = "End date cannot be before start date";
+  }
+  if (startDate && tripStart && startDate < tripStart) {
+    errors.startDate = "Stop cannot start before the trip starts";
+  }
+  if (endDate && tripEnd && endDate > tripEnd) {
+    errors.endDate = "Stop cannot end after the trip ends";
+  }
+  return errors;
+}
+
 export function validateTrip({
   name,
   startDate,

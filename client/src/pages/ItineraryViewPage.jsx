@@ -9,6 +9,8 @@ import {
   Wallet,
 } from "lucide-react";
 import ConfirmDialog from "../components/ConfirmDialog.jsx";
+import TripSubnav from "../components/TripSubnav.jsx";
+import StopCard from "../features/itinerary/StopCard.jsx";
 import { deleteTrip, getTrip } from "../lib/tripsApi.js";
 import { formatDateRange, formatMoney } from "../lib/dates.js";
 
@@ -72,6 +74,7 @@ export default function ItineraryViewPage() {
 
   return (
     <section className="space-y-6">
+      <TripSubnav tripId={trip.id} />
       <div className="overflow-hidden rounded-2xl border border-sand bg-white shadow-sm">
         <div className="h-48 bg-gradient-to-br from-teal to-teal-dark md:h-64">
           {showImage ? (
@@ -140,14 +143,28 @@ export default function ItineraryViewPage() {
         </div>
       </div>
 
-      <div className="rounded-2xl border border-dashed border-sand bg-white px-6 py-10 text-center">
-        <Luggage className="mx-auto mb-3 text-teal" size={32} />
-        <h2 className="text-lg font-semibold">Itinerary coming next</h2>
-        <p className="mx-auto mt-1 max-w-lg text-sm text-muted">
-          Stops, activities, and day-by-day planning will be added in the next
-          step. This trip is saved and ready for cities.
-        </p>
-      </div>
+      {(trip.stops || []).length === 0 ? (
+        <div className="rounded-2xl border border-dashed border-sand bg-white px-6 py-10 text-center">
+          <Luggage className="mx-auto mb-3 text-teal" size={32} />
+          <h2 className="text-lg font-semibold">Your journey starts here</h2>
+          <p className="mx-auto mt-1 max-w-lg text-sm text-muted">
+            Search for a city and add your first destination.
+          </p>
+          <Link
+            to={`/trips/${trip.id}/edit`}
+            className="mt-4 inline-flex rounded-lg bg-teal px-4 py-2 text-sm font-medium text-white hover:bg-teal-dark"
+          >
+            Open builder
+          </Link>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          <h2 className="text-lg font-semibold">Itinerary</h2>
+          {trip.stops.map((stop, index) => (
+            <StopCard key={stop.id} stop={stop} index={index} readOnly />
+          ))}
+        </div>
+      )}
 
       {pendingDelete ? (
         <ConfirmDialog
