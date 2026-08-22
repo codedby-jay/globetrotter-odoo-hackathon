@@ -44,6 +44,9 @@ export function explainApiError(error, fallback = "Something went wrong") {
     }
     return detail || error.message || "Check the dates and try again.";
   }
+  if (error.status === 502) {
+    return error.message || "Odoo is unavailable. Try again later.";
+  }
   if (error.status >= 500) {
     return "The server is unavailable. Please try again shortly.";
   }

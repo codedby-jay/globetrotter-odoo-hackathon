@@ -31,7 +31,9 @@ import {
   reorderStopsSchema,
 } from "../validation/stopSchemas.js";
 import { createExpenseSchema } from "../validation/expenseSchemas.js";
+import { exportTrip, testTrip } from "../controllers/odooController.js";
 import { shareEventSchema, visibilitySchema } from "../validation/shareSchemas.js";
+import { odooTripParamsSchema } from "../validation/odooSchemas.js";
 
 const router = Router();
 
@@ -71,6 +73,8 @@ router.post(
   validateBody(shareEventSchema),
   recordOwnerShare,
 );
+router.post("/:id/odoo/test", validateParams(odooTripParamsSchema), testTrip);
+router.post("/:id/odoo/export", validateParams(odooTripParamsSchema), exportTrip);
 router.get("/:id", validateParams(tripIdParamsSchema), getTrip);
 router.patch(
   "/:id",

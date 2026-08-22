@@ -18,6 +18,7 @@ import CitySearchPage from "./pages/search/CitySearchPage.jsx";
 import ActivitySearchPage from "./pages/search/ActivitySearchPage.jsx";
 import PublicItineraryPage from "./pages/share/PublicItineraryPage.jsx";
 import ShareTripPage from "./pages/share/ShareTripPage.jsx";
+import TripOdooPage from "./pages/trips/TripOdooPage.jsx";
 import ProfilePage from "./pages/ProfilePage.jsx";
 import AdminPage from "./pages/AdminPage.jsx";
 
@@ -122,6 +123,14 @@ export default function App() {
           element={
             <Guarded>
               <ShareTripPage />
+            </Guarded>
+          }
+        />
+        <Route
+          path="/trips/:id/odoo"
+          element={
+            <Guarded>
+              <TripOdooPage />
             </Guarded>
           }
         />
