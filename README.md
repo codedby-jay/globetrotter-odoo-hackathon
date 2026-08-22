@@ -72,4 +72,4 @@ The app is at `http://localhost:5173`. Vite proxies `/api` to the backend.
 
 ## Environment variables
 
-See `.env.example`. Copy it to `.env` at the repository root and to `server/.env`. Do not commit secrets.
+See `.env.example`. Copy it to `.env` at the repository root and to `server/.env`. Don't commit secrets.
