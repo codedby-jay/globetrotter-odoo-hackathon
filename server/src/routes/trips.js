@@ -31,9 +31,11 @@ import {
   reorderStopsSchema,
 } from "../validation/stopSchemas.js";
 import { createExpenseSchema } from "../validation/expenseSchemas.js";
+import { analyze, chat, suggestions } from "../controllers/aiController.js";
 import { exportTrip, testTrip } from "../controllers/odooController.js";
 import { shareEventSchema, visibilitySchema } from "../validation/shareSchemas.js";
 import { odooTripParamsSchema } from "../validation/odooSchemas.js";
+import { aiTripParamsSchema, chatBodySchema, suggestionsBodySchema } from "../validation/aiSchemas.js";
 
 const router = Router();
 
@@ -75,6 +77,19 @@ router.post(
 );
 router.post("/:id/odoo/test", validateParams(odooTripParamsSchema), testTrip);
 router.post("/:id/odoo/export", validateParams(odooTripParamsSchema), exportTrip);
+router.post(
+  "/:id/ai/chat",
+  validateParams(aiTripParamsSchema),
+  validateBody(chatBodySchema),
+  chat,
+);
+router.post(
+  "/:id/ai/suggestions",
+  validateParams(aiTripParamsSchema),
+  validateBody(suggestionsBodySchema),
+  suggestions,
+);
+router.post("/:id/ai/analyze", validateParams(aiTripParamsSchema), analyze);
 router.get("/:id", validateParams(tripIdParamsSchema), getTrip);
 router.patch(
   "/:id",

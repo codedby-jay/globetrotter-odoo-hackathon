@@ -68,6 +68,27 @@ export function clockToMinutes(value) {
   return date.getUTCHours() * 60 + date.getUTCMinutes();
 }
 
+export function addDays(isoDate, days) {
+  const date = new Date(`${isoDate}T00:00:00.000Z`);
+  date.setUTCDate(date.getUTCDate() + days);
+  return date.toISOString().slice(0, 10);
+}
+
+export function datesInRange(startDate, endDate) {
+  const start = dateOnly(startDate);
+  const end = dateOnly(endDate);
+  if (!start || !end || end < start) {
+    return [];
+  }
+  const days = [];
+  let current = start;
+  while (current <= end) {
+    days.push(current);
+    current = addDays(current, 1);
+  }
+  return days;
+}
+
 export function addMinutesToClock(value, minutes) {
   const start = clockToMinutes(value);
   if (start == null || minutes == null) {
