@@ -2,7 +2,9 @@ import { Link } from "react-router-dom";
 import { ArrowDown, ArrowUp, MapPin, Pencil, Plus, Sparkles, Trash2 } from "lucide-react";
 import ActivityCard from "../activities/ActivityCard.jsx";
 import { formatDateRange, formatMoney, tripLengthLabel } from "../../lib/dates.js";
+import { cityCoverSrc } from "../../lib/travelArt.js";
 import Button from "../../ui/Button.jsx";
+import CoverImage from "../../components/CoverImage.jsx";
 
 export default function StopCard({
   stop,
@@ -28,20 +30,28 @@ export default function StopCard({
   const transport = formatMoney(stop.transportCost ?? 0, currency);
 
   return (
-    <article className="gt-card p-4 md:p-5">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div className="min-w-0">
-          <div className="flex items-center gap-2">
-            <span className="flex h-7 w-7 items-center justify-center rounded-full bg-teal text-xs font-bold text-white">
-              {number}
-            </span>
-            <p className="gt-eyebrow">Destination</p>
-          </div>
-          <h3 className="mt-2 flex items-center gap-2 font-display text-xl font-semibold tracking-tight">
-            <MapPin size={18} className="text-teal" />
+    <article className="gt-card overflow-hidden">
+      <div className="relative h-28 bg-navy sm:h-36">
+        <CoverImage
+          src={cityCoverSrc(stop.city)}
+          alt=""
+          className="h-full w-full object-cover"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-navy/70 to-transparent" />
+        <div className="absolute bottom-3 left-4 text-white">
+          <p className="text-[0.65rem] font-semibold uppercase tracking-[0.14em] text-white/75">
+            Destination {number}
+          </p>
+          <h3 className="font-display text-xl font-semibold tracking-tight">
             {stop.city?.name || "Unknown city"}
           </h3>
-          <p className="text-sm text-muted">
+        </div>
+      </div>
+      <div className="p-4 md:p-5">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div className="min-w-0">
+          <p className="flex items-center gap-2 text-sm text-muted">
+            <MapPin size={16} className="text-teal" />
             {[stop.city?.country].filter(Boolean).join(", ")}
             {stop.city?.region ? ` · ${stop.city.region}` : ""}
           </p>
@@ -129,6 +139,7 @@ export default function StopCard({
             Add activity
           </Link>
         )}
+      </div>
       </div>
     </article>
   );

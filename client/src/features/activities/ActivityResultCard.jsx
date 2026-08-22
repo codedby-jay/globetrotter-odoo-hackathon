@@ -1,6 +1,8 @@
-import { Clock3, Plus, Tag } from "lucide-react";
+import { Clock3, Plus } from "lucide-react";
 import { categoryLabel, formatDuration, formatMoney } from "../../lib/dates.js";
+import { photoForQuery } from "../../lib/travelArt.js";
 import Button from "../../ui/Button.jsx";
+import CoverImage from "../../components/CoverImage.jsx";
 
 export default function ActivityResultCard({
   activity,
@@ -18,9 +20,11 @@ export default function ActivityResultCard({
             className="h-36 w-full object-cover sm:h-auto sm:w-44"
           />
         ) : (
-          <div className="flex h-24 items-center justify-center bg-teal-soft text-teal sm:h-auto sm:w-24">
-            <Tag size={22} />
-          </div>
+          <CoverImage
+            src={photoForQuery(`${activity.name} ${activity.type || ""}`, "city")}
+            alt=""
+            className="h-36 w-full object-cover sm:h-auto sm:w-44"
+          />
         )}
         <div className="flex flex-1 flex-col justify-between gap-3 p-4 sm:p-5">
           <div>

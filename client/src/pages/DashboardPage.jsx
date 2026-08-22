@@ -1,16 +1,24 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight, MapPinned, Plus } from "lucide-react";
+import { ArrowRight, Compass, MapPinned, Plane, Plus, Search } from "lucide-react";
 import { useAuth } from "../context/AuthContext.jsx";
 import TripCard from "../components/TripCard.jsx";
 import ConfirmDialog from "../components/ConfirmDialog.jsx";
 import { explainApiError } from "../lib/api.js";
 import { deleteTrip, listTrips } from "../lib/tripsApi.js";
+import { TRAVEL_PHOTOS } from "../lib/travelArt.js";
 import EmptyState from "../components/EmptyState.jsx";
 import PageLoader from "../components/PageLoader.jsx";
 import Alert from "../ui/Alert.jsx";
 import Button from "../ui/Button.jsx";
 import SectionHeader from "../ui/SectionHeader.jsx";
+
+const SHORTCUTS = [
+  { to: "/trips/new", label: "Holidays", hint: "Plan a multi-city trip", icon: Plane },
+  { to: "/search/cities", label: "Destinations", hint: "Search cities worldwide", icon: Compass },
+  { to: "/search/activities", label: "Experiences", hint: "Find things to do", icon: Search },
+  { to: "/trips", label: "My trips", hint: "Open saved itineraries", icon: MapPinned },
+];
 
 export default function DashboardPage() {
   const { user } = useAuth();
@@ -92,41 +100,70 @@ export default function DashboardPage() {
 
   return (
     <section className="space-y-8">
-      <div className="overflow-hidden gt-card">
-        <div className="bg-navy px-6 py-8 text-white md:flex md:items-end md:justify-between md:px-8 md:py-10">
-          <div>
-            <p className="text-[0.7rem] font-semibold uppercase tracking-[0.16em] text-white/55">
-              Welcome back
+      <div className="relative -mx-4 -mt-8 overflow-hidden md:-mt-10">
+        <div className="relative min-h-[22rem] md:min-h-[26rem]">
+          <img
+            src={TRAVEL_PHOTOS.flight}
+            alt=""
+            className="absolute inset-0 h-full w-full object-cover"
+            referrerPolicy="no-referrer"
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-navy/90 via-navy/70 to-navy/25" />
+          <div className="relative mx-auto flex max-w-6xl flex-col justify-end px-4 pb-28 pt-16 md:pb-32 md:pt-20">
+            <p className="text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-white/70">
+              Welcome back, {firstName}
             </p>
-            <h1 className="mt-2 font-display text-3xl font-semibold tracking-tight md:text-4xl">
-              {firstName}, plan your next adventure.
+            <h1 className="mt-2 max-w-xl font-display text-4xl font-semibold tracking-tight text-white md:text-5xl">
+              Where do you want to fly next?
             </h1>
-            <p className="mt-3 max-w-xl text-sm text-white/70">
+            <p className="mt-3 max-w-lg text-sm text-white/80">
               {loading
                 ? "Loading your trips…"
                 : upcomingCount
-                  ? `${upcomingCount} upcoming ${upcomingCount === 1 ? "trip" : "trips"} on the board.`
-                  : "Your next itinerary starts with a name, dates, and a destination."}
+                  ? `${upcomingCount} upcoming ${upcomingCount === 1 ? "trip" : "trips"} · ${destinationTotal} destinations on the board.`
+                  : "Search destinations, lock dates, and build a holiday itinerary."}
             </p>
+            <div className="mt-6">
+              <Button variant="coral" size="lg" to="/trips/new">
+                <Plus size={16} />
+                Plan a holiday
+              </Button>
+            </div>
           </div>
-          <Button variant="coral" to="/trips/new" className="mt-5 md:mt-0">
-            <Plus size={16} />
-            Plan new trip
-          </Button>
         </div>
-        <div className="grid gap-px bg-line sm:grid-cols-3">
-          <div className="bg-[#fffdf9] p-4">
-            <p className="gt-eyebrow">Trips</p>
-            <p className="mt-1 font-display text-2xl font-semibold">{loading ? "—" : trips.length}</p>
+        <div className="relative z-10 mx-auto -mt-16 max-w-6xl px-4 pb-2">
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            {SHORTCUTS.map(({ to, label, hint, icon: Icon }) => (
+              <Link
+                key={to}
+                to={to}
+                className="gt-card gt-card-hover flex items-start gap-3 p-4 no-underline"
+              >
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-teal-soft text-teal">
+                  <Icon size={20} />
+                </span>
+                <span>
+                  <span className="block font-display text-lg font-semibold text-ink">{label}</span>
+                  <span className="mt-0.5 block text-xs text-muted">{hint}</span>
+                </span>
+              </Link>
+            ))}
           </div>
-          <div className="bg-[#fffdf9] p-4">
-            <p className="gt-eyebrow">Upcoming</p>
-            <p className="mt-1 font-display text-2xl font-semibold">{loading ? "—" : upcomingCount}</p>
-          </div>
-          <div className="bg-[#fffdf9] p-4">
-            <p className="gt-eyebrow">Destinations</p>
-            <p className="mt-1 font-display text-2xl font-semibold">{loading ? "—" : destinationTotal}</p>
-          </div>
+        </div>
+      </div>
+
+      <div className="grid gap-px overflow-hidden rounded-2xl border border-line bg-line sm:grid-cols-3">
+        <div className="bg-[#fffdf9] p-4">
+          <p className="gt-eyebrow">Trips</p>
+          <p className="mt-1 font-display text-2xl font-semibold">{loading ? "—" : trips.length}</p>
+        </div>
+        <div className="bg-[#fffdf9] p-4">
+          <p className="gt-eyebrow">Upcoming</p>
+          <p className="mt-1 font-display text-2xl font-semibold">{loading ? "—" : upcomingCount}</p>
+        </div>
+        <div className="bg-[#fffdf9] p-4">
+          <p className="gt-eyebrow">Destinations</p>
+          <p className="mt-1 font-display text-2xl font-semibold">{loading ? "—" : destinationTotal}</p>
         </div>
       </div>
 

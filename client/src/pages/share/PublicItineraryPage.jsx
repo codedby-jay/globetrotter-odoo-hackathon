@@ -13,6 +13,8 @@ import {
   formatWeekdayDate,
 } from "../../lib/dates.js";
 import { copyPublicTrip, getPublicTrip, publicTripUrl } from "../../lib/shareApi.js";
+import { tripCoverFallback, tripCoverSrc } from "../../lib/travelArt.js";
+import CoverImage from "../../components/CoverImage.jsx";
 
 export default function PublicItineraryPage() {
   const { slug } = useParams();
@@ -139,7 +141,15 @@ export default function PublicItineraryPage() {
   return (
     <article className="space-y-6">
       <header className="gt-card overflow-hidden">
-        <div className="bg-navy px-6 py-10 text-white md:px-10">
+        <div className="relative min-h-[18rem] bg-navy px-6 py-10 text-white md:min-h-[22rem] md:px-10">
+          <CoverImage
+            src={tripCoverSrc(trip)}
+            fallbackSrc={tripCoverFallback(trip)}
+            alt=""
+            className="absolute inset-0 h-full w-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-navy/90 via-navy/65 to-navy/20" />
+          <div className="relative">
           <p className="text-[0.7rem] font-semibold uppercase tracking-[0.16em] text-white/55">
             GlobeTrotter itinerary
           </p>
@@ -170,6 +180,7 @@ export default function PublicItineraryPage() {
                 Log in
               </Link>
             ) : null}
+          </div>
           </div>
         </div>
       </header>

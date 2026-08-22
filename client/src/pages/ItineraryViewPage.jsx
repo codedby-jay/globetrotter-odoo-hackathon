@@ -21,7 +21,9 @@ import StopCard from "../features/itinerary/StopCard.jsx";
 import { explainApiError } from "../lib/api.js";
 import { getBudgetSummary } from "../lib/expensesApi.js";
 import { deleteTrip, getTrip } from "../lib/tripsApi.js";
+import CoverImage from "../components/CoverImage.jsx";
 import { formatCurrency, formatDateRange, formatMoney, tripLengthLabel } from "../lib/dates.js";
+import { tripCoverFallback, tripCoverSrc } from "../lib/travelArt.js";
 import Alert from "../ui/Alert.jsx";
 import Button from "../ui/Button.jsx";
 import SectionHeader from "../ui/SectionHeader.jsx";
@@ -34,7 +36,6 @@ export default function ItineraryViewPage() {
   const [summary, setSummary] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [imageFailed, setImageFailed] = useState(false);
   const [pendingDelete, setPendingDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
@@ -49,7 +50,6 @@ export default function ItineraryViewPage() {
         if (!cancelled) {
           setTrip(data.trip);
           setSummary(budget);
-          setImageFailed(false);
         }
       } catch (err) {
         if (!cancelled) {
@@ -86,7 +86,6 @@ export default function ItineraryViewPage() {
     return <Alert>{error}</Alert>;
   }
 
-  const showImage = trip.coverPhotoUrl && !imageFailed;
   const activityCount = (trip.stops || []).reduce(
     (sum, stop) => sum + (stop.activities || []).length,
     0,
@@ -98,17 +97,13 @@ export default function ItineraryViewPage() {
     <section className="space-y-7">
       <TripSubnav tripId={trip.id} />
       <div className="gt-card overflow-hidden">
-        <div className="relative h-52 bg-navy md:h-72">
-          {showImage ? (
-            <img
-              src={trip.coverPhotoUrl}
-              alt={`${trip.name} cover`}
-              className="h-full w-full object-cover"
-              onError={() => setImageFailed(true)}
-            />
-          ) : (
-            <div className="absolute inset-0 bg-[linear-gradient(135deg,#0d5757_0%,#10212a_75%)]" />
-          )}
+        <div className="relative h-52 bg-navy md:h-80">
+          <CoverImage
+            src={tripCoverSrc(trip)}
+            fallbackSrc={tripCoverFallback(trip)}
+            alt=""
+            className="h-full w-full object-cover"
+          />
           <div className="absolute inset-0 bg-gradient-to-t from-navy via-navy/35 to-transparent" />
           <div className="absolute inset-x-0 bottom-0 p-6 text-white md:p-8">
             <p className="text-[0.7rem] font-semibold uppercase tracking-[0.16em] text-white/60">

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { NavLink, Outlet } from "react-router-dom";
+import { NavLink, Outlet, useLocation } from "react-router-dom";
 import {
   Compass,
   LayoutDashboard,
@@ -30,6 +30,10 @@ function linkClass({ isActive }) {
 export default function AppShell() {
   const [menuOpen, setMenuOpen] = useState(false);
   const { user, logout, loading } = useAuth();
+  const { pathname } = useLocation();
+  const isAuthRoute = ["/login", "/signup", "/forgot-password", "/reset-password"].includes(
+    pathname,
+  );
 
   return (
     <div className="min-h-svh text-ink">
@@ -56,6 +60,9 @@ export default function AppShell() {
           <div className="hidden items-center gap-3 md:flex">
             {loading ? null : user ? (
               <>
+                <Button variant="coral" size="sm" to="/trips/new">
+                  Plan trip
+                </Button>
                 <div className="flex items-center gap-2 rounded-full border border-line bg-cream px-2 py-1 pr-3">
                   <span className="flex h-7 w-7 items-center justify-center rounded-full bg-teal text-xs font-semibold text-white">
                     {(user.name || "T").slice(0, 1).toUpperCase()}
@@ -80,7 +87,7 @@ export default function AppShell() {
 
           <button
             type="button"
-            className="gt-btn gt-btn-ghost md:hidden"
+            className="inline-flex items-center justify-center rounded-lg p-2 text-muted hover:bg-sand md:hidden"
             onClick={() => setMenuOpen((open) => !open)}
             aria-label={menuOpen ? "Close menu" : "Open menu"}
           >
@@ -133,7 +140,13 @@ export default function AppShell() {
         ) : null}
       </header>
 
-      <main className="mx-auto w-full min-w-0 max-w-6xl px-4 py-8 md:py-10">
+      <main
+        className={
+          isAuthRoute
+            ? "w-full min-w-0"
+            : "mx-auto w-full min-w-0 max-w-6xl px-4 py-8 md:py-10"
+        }
+      >
         <Outlet />
       </main>
     </div>
