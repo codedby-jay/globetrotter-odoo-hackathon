@@ -18,6 +18,7 @@ function serializeTripSummary(trip) {
     currency: trip.currency,
     visibility: trip.visibility,
     shareSlug: trip.shareSlug,
+    copiedFromId: trip.copiedFromId || null,
     destinationCount: trip._count?.stops ?? trip.stops?.length ?? 0,
     createdAt: trip.createdAt,
     updatedAt: trip.updatedAt,
