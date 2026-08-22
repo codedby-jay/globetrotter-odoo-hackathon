@@ -1,32 +1,10 @@
 import { prisma } from "../lib/prisma.js";
 import { HttpError } from "../lib/httpError.js";
 import { createShareSlug } from "../lib/shareSlug.js";
+import { dateOnly, money, toDate, utcToday } from "../lib/dates.js";
+import { serializeStop } from "../lib/serialize.js";
 
 const SLUG_ATTEMPTS = 5;
-
-function dateOnly(value) {
-  if (!value) {
-    return null;
-  }
-  const date = value instanceof Date ? value : new Date(value);
-  return date.toISOString().slice(0, 10);
-}
-
-function money(value) {
-  if (value === null || value === undefined) {
-    return null;
-  }
-  return Number(value);
-}
-
-function utcToday() {
-  const now = new Date();
-  return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
-}
-
-function toDate(value) {
-  return new Date(`${value}T00:00:00.000Z`);
-}
 
 function serializeTripSummary(trip) {
   return {
@@ -46,54 +24,10 @@ function serializeTripSummary(trip) {
   };
 }
 
-function serializeStopActivity(item) {
-  return {
-    id: item.id,
-    scheduledDate: dateOnly(item.scheduledDate),
-    startTime: item.startTime,
-    durationMin: item.durationMin,
-    cost: money(item.cost),
-    costCategory: item.costCategory,
-    position: item.position,
-    notes: item.notes,
-    customName: item.customName,
-    customDescription: item.customDescription,
-    activity: item.activity
-      ? {
-          id: item.activity.id,
-          name: item.activity.name,
-          type: item.activity.type,
-          imageUrl: item.activity.imageUrl,
-          durationMin: item.activity.durationMin,
-          typicalCost: money(item.activity.typicalCost),
-        }
-      : null,
-  };
-}
-
 function serializeTripDetail(trip) {
   return {
     ...serializeTripSummary(trip),
-    stops: (trip.stops ?? []).map((stop) => ({
-      id: stop.id,
-      position: stop.position,
-      startDate: dateOnly(stop.startDate),
-      endDate: dateOnly(stop.endDate),
-      notes: stop.notes,
-      stayCost: money(stop.stayCost),
-      transportCost: money(stop.transportCost),
-      city: stop.city
-        ? {
-            id: stop.city.id,
-            name: stop.city.name,
-            country: stop.city.country,
-            countryCode: stop.city.countryCode,
-            region: stop.city.region,
-            imageUrl: stop.city.imageUrl,
-          }
-        : null,
-      activities: (stop.activities ?? []).map(serializeStopActivity),
-    })),
+    stops: (trip.stops ?? []).map(serializeStop),
     expenses: (trip.expenses ?? []).map((expense) => ({
       id: expense.id,
       category: expense.category,
@@ -122,7 +56,7 @@ const detailInclude = {
   },
 };
 
-async function requireOwnedTrip(id, userId) {
+export async function requireOwnedTrip(id, userId) {
   const trip = await prisma.trip.findUnique({
     where: { id },
     select: { id: true, ownerId: true },
