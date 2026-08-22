@@ -32,10 +32,20 @@ import {
 } from "../validation/stopSchemas.js";
 import { createExpenseSchema } from "../validation/expenseSchemas.js";
 import { analyze, chat, suggestions } from "../controllers/aiController.js";
+import {
+  analyze as analyzeAssistant,
+  chat as chatAssistant,
+  suggestions as suggestionsAssistant,
+} from "../controllers/assistantController.js";
 import { exportTrip, testTrip } from "../controllers/odooController.js";
 import { shareEventSchema, visibilitySchema } from "../validation/shareSchemas.js";
 import { odooTripParamsSchema } from "../validation/odooSchemas.js";
 import { aiTripParamsSchema, chatBodySchema, suggestionsBodySchema } from "../validation/aiSchemas.js";
+import {
+  assistantChatBodySchema,
+  assistantSuggestionsBodySchema,
+  assistantTripParamsSchema,
+} from "../validation/assistantSchemas.js";
 
 const router = Router();
 
@@ -90,6 +100,19 @@ router.post(
   suggestions,
 );
 router.post("/:id/ai/analyze", validateParams(aiTripParamsSchema), analyze);
+router.post(
+  "/:id/assistant/chat",
+  validateParams(assistantTripParamsSchema),
+  validateBody(assistantChatBodySchema),
+  chatAssistant,
+);
+router.post(
+  "/:id/assistant/suggestions",
+  validateParams(assistantTripParamsSchema),
+  validateBody(assistantSuggestionsBodySchema),
+  suggestionsAssistant,
+);
+router.post("/:id/assistant/analyze", validateParams(assistantTripParamsSchema), analyzeAssistant);
 router.get("/:id", validateParams(tripIdParamsSchema), getTrip);
 router.patch(
   "/:id",

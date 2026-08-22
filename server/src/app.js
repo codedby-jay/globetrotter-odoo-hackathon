@@ -2,6 +2,7 @@ import cors from "cors";
 import express from "express";
 import { errorHandler } from "./middleware/errorHandler.js";
 import aiRouter from "./routes/ai.js";
+import assistantRouter from "./routes/assistant.js";
 import authRouter from "./routes/auth.js";
 import expensesRouter from "./routes/expenses.js";
 import healthRouter from "./routes/health.js";
@@ -26,6 +27,7 @@ export function createApp() {
   app.use("/api", healthRouter);
   app.use("/api/v1/auth", authRouter);
   app.use("/api/v1/ai", aiRouter);
+  app.use("/api/v1/assistant", assistantRouter);
   app.use("/api/v1/odoo", odooRouter);
   app.use("/api/v1/public", publicRouter);
   app.use("/api/v1/trips", tripsRouter);

@@ -315,7 +315,7 @@ export function catalogSuggestions(context, preferences = {}) {
   return { summary, recommendations, source: "smart_analysis" };
 }
 
-function fallbackChat(context, message) {
+export function buildSmartChatResponse(context, message) {
   const analysis = analyzeTripContext(context);
   const { budget, trip, calendar, destinations } = context;
   const text = String(message || "").toLowerCase();
@@ -437,7 +437,7 @@ export async function askTripAssistant(tripId, userId, question) {
     throw new HttpError(400, "Message is required");
   }
   const context = await getTripContext(tripId, userId);
-  const fallback = fallbackChat(context, message);
+  const fallback = buildSmartChatResponse(context, message);
 
   if (!isAiConfigured()) {
     return fallback;

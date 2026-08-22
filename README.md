@@ -211,7 +211,34 @@ The assistant never writes trips, stops, activities, or expenses.
 
 ### Usage
 
-Open a trip → **AI Assistant** (`/trips/:id/ai`). Ask a question, or use Suggest activities / Optimize my budget / Analyze itinerary / Find empty days.
+Open a trip → **AI Assistant** (`/trips/:id/assistant`). Ask a question, or use Analyze my trip / Suggest activities / Optimize my budget / Find empty days. `/trips/:id/ai` redirects to the same page.
+
+## Smart Trip Assistant
+
+Architecture:
+
+```
+React (/trips/:id/assistant)
+  → Express `/api/v1/assistant` and `/api/v1/trips/:id/assistant/*`
+  → tripAssistantService
+  → PostgreSQL (trip, stops, activities, expenses)
+  → optional aiProvider.generateText
+```
+
+The browser never calls an AI vendor. Budget remaining, empty days, and conflicts are computed in Express using the same calendar rules as the trip timeline and `TripExpense` totals.
+
+### Endpoints (JWT, trip owner)
+
+- `GET /api/v1/assistant/status` — `{ configured, mode, message }` (`mode` is `smart_analysis` or `ai`)
+- `POST /api/v1/trips/:id/assistant/analyze` — `{ summary, budget, health, issues, suggestions, recommendations, mode }`
+- `POST /api/v1/trips/:id/assistant/suggestions` — catalog activities stored in PostgreSQL
+- `POST /api/v1/trips/:id/assistant/chat` — `{ answer, relatedSuggestions, mode }`
+
+Existing `/api/v1/trips/:id/ai/*` routes remain for compatibility.
+
+If `AI_PROVIDER` / `AI_API_KEY` / `AI_MODEL` are empty, responses use **Smart Analysis Mode**. If a provider is configured but unreachable, assistant chat falls back to that same engine instead of failing the page.
+
+The assistant never writes trips, expenses, or activities.
 
 ### Fallback (no key, or analysis when the model fails)
 
