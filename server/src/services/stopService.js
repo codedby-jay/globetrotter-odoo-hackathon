@@ -8,7 +8,7 @@ const stopInclude = {
   city: true,
   activities: {
     orderBy: [{ scheduledDate: "asc" }, { position: "asc" }],
-    include: { activity: true },
+    include: { activity: { include: { city: true } } },
   },
 };
 
@@ -26,7 +26,7 @@ function assertStopWithinTrip(trip, startDate, endDate) {
   }
 }
 
-async function getOwnedStop(stopId, userId) {
+export async function getOwnedStop(stopId, userId) {
   const stop = await prisma.stop.findUnique({
     where: { id: stopId },
     include: {

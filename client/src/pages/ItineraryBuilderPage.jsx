@@ -1,19 +1,26 @@
 import { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useLocation, useParams } from "react-router-dom";
 import { MapPinned, Plus } from "lucide-react";
 import ConfirmDialog from "../components/ConfirmDialog.jsx";
 import TripForm from "../components/TripForm.jsx";
 import TripSubnav from "../components/TripSubnav.jsx";
+import AddActivityModal from "../features/activities/AddActivityModal.jsx";
 import AddStopModal from "../features/itinerary/AddStopModal.jsx";
 import StopCard from "../features/itinerary/StopCard.jsx";
-import { ApiError } from "../lib/api.js";
-import { formatDateRange, formatMoney } from "../lib/dates.js";
+import { ApiError, explainApiError } from "../lib/api.js";
+import {
+  deleteStopActivity,
+  reorderStopActivities,
+  updateStopActivity,
+} from "../lib/activitiesApi.js";
+import { formatDateRange, formatMoney, activityLabel } from "../lib/dates.js";
 import { createStop, deleteStop, reorderStops, updateStop } from "../lib/stopsApi.js";
 import { getTrip, updateTrip } from "../lib/tripsApi.js";
 import { fieldError, validateTrip } from "../lib/validation.js";
 
 export default function ItineraryBuilderPage() {
   const { id } = useParams();
+  const location = useLocation();
   const [trip, setTrip] = useState(null);
   const [values, setValues] = useState(null);
   const [errors, setErrors] = useState({});
@@ -28,6 +35,18 @@ export default function ItineraryBuilderPage() {
   const [deleting, setDeleting] = useState(false);
   const [reordering, setReordering] = useState(false);
   const [stopError, setStopError] = useState("");
+  const [addedNotice, setAddedNotice] = useState(
+    location.state?.addedDestination
+      ? `${location.state.addedDestination} was added to this itinerary.`
+      : location.state?.addedActivity
+        ? `${location.state.addedActivity} was added to this destination.`
+        : "",
+  );
+  const [activityModal, setActivityModal] = useState(null);
+  const [activityModalError, setActivityModalError] = useState("");
+  const [savingActivity, setSavingActivity] = useState(false);
+  const [pendingDeleteActivity, setPendingDeleteActivity] = useState(null);
+  const [activityReordering, setActivityReordering] = useState(false);
 
   async function loadTrip() {
     const data = await getTrip(id);
@@ -196,6 +215,80 @@ export default function ItineraryBuilderPage() {
     }
   }
 
+  async function handleActivitySubmit(payload) {
+    if (!activityModal?.item) {
+      return;
+    }
+    setSavingActivity(true);
+    setActivityModalError("");
+    try {
+      await updateStopActivity(activityModal.item.id, payload);
+      setActivityModal(null);
+      setAddedNotice("Activity updated.");
+      await loadTrip();
+    } catch (err) {
+      setActivityModalError(explainApiError(err, "Unable to update this activity"));
+      throw err;
+    } finally {
+      setSavingActivity(false);
+    }
+  }
+
+  async function confirmDeleteActivity() {
+    if (!pendingDeleteActivity) {
+      return;
+    }
+    setDeleting(true);
+    setStopError("");
+    try {
+      await deleteStopActivity(pendingDeleteActivity.item.id);
+      setPendingDeleteActivity(null);
+      setAddedNotice("Activity removed.");
+      await loadTrip();
+    } catch (err) {
+      setStopError(explainApiError(err, "Unable to remove this activity"));
+    } finally {
+      setDeleting(false);
+    }
+  }
+
+  async function moveActivity(stop, index, direction) {
+    const current = [...(stop.activities || [])];
+    const swapWith = index + direction;
+    if (swapWith < 0 || swapWith >= current.length) {
+      return;
+    }
+    const previousStops = trip.stops;
+    const next = [...current];
+    const [moved] = next.splice(index, 1);
+    next.splice(swapWith, 0, moved);
+    setTrip({
+      ...trip,
+      stops: trip.stops.map((item) =>
+        item.id === stop.id ? { ...item, activities: next } : item,
+      ),
+    });
+    setActivityReordering(true);
+    setStopError("");
+    try {
+      const data = await reorderStopActivities(
+        stop.id,
+        next.map((item) => item.id),
+      );
+      setTrip({
+        ...trip,
+        stops: trip.stops.map((item) =>
+          item.id === stop.id ? { ...item, activities: data.activities } : item,
+        ),
+      });
+    } catch (err) {
+      setTrip({ ...trip, stops: previousStops });
+      setStopError(explainApiError(err, "Unable to reorder activities"));
+    } finally {
+      setActivityReordering(false);
+    }
+  }
+
   if (loading) {
     return <p className="text-sm text-muted">Loading trip…</p>;
   }
@@ -245,18 +338,22 @@ export default function ItineraryBuilderPage() {
       <section className="space-y-4">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <h2 className="text-lg font-semibold">Your itinerary</h2>
-          <button
-            type="button"
+          <Link
+            to={`/search/cities?tripId=${id}`}
             className="inline-flex items-center justify-center gap-2 rounded-lg bg-coral px-4 py-2 text-sm font-medium text-white hover:opacity-90"
-            onClick={() => {
-              setModalError("");
-              setModal({});
-            }}
           >
             <Plus size={16} />
             Add destination
-          </button>
+          </Link>
         </div>
+        {addedNotice ? (
+          <p className="rounded-xl bg-cream px-4 py-3 text-sm text-teal-dark">
+            {addedNotice}{" "}
+            <Link className="font-medium text-teal" to={`/search/cities?tripId=${id}`}>
+              Add another destination
+            </Link>
+          </p>
+        ) : null}
         {stopError ? <p className="text-sm text-coral">{stopError}</p> : null}
         {stops.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-sand bg-white px-6 py-12 text-center">
@@ -265,6 +362,12 @@ export default function ItineraryBuilderPage() {
             <p className="mt-1 text-sm text-muted">
               Search for a city and add your first destination.
             </p>
+            <Link
+              to={`/search/cities?tripId=${id}`}
+              className="mt-4 inline-flex rounded-lg bg-coral px-4 py-2 text-sm font-medium text-white hover:opacity-90"
+            >
+              + Add destination
+            </Link>
           </div>
         ) : (
           <div className="space-y-3">
@@ -273,9 +376,12 @@ export default function ItineraryBuilderPage() {
                 key={stop.id}
                 stop={stop}
                 index={index}
+                tripId={id}
+                currency={trip.currency}
                 isFirst={index === 0}
                 isLast={index === stops.length - 1}
                 reordering={reordering}
+                activityReordering={activityReordering}
                 onEdit={() => {
                   setModalError("");
                   setModal(stop);
@@ -283,6 +389,14 @@ export default function ItineraryBuilderPage() {
                 onDelete={() => setPendingDelete(stop)}
                 onMoveUp={() => moveStop(index, -1)}
                 onMoveDown={() => moveStop(index, 1)}
+                onEditActivity={(currentStop, item) => {
+                  setActivityModalError("");
+                  setActivityModal({ stop: currentStop, item });
+                }}
+                onDeleteActivity={(currentStop, item) =>
+                  setPendingDeleteActivity({ stop: currentStop, item })
+                }
+                onMoveActivity={moveActivity}
               />
             ))}
           </div>
@@ -309,6 +423,29 @@ export default function ItineraryBuilderPage() {
           busyLabel="Removing…"
           onCancel={() => setPendingDelete(null)}
           onConfirm={confirmDelete}
+          busy={deleting}
+        />
+      ) : null}
+
+      {activityModal ? (
+        <AddActivityModal
+          stop={activityModal.stop}
+          initialItem={activityModal.item}
+          onClose={() => setActivityModal(null)}
+          onSubmit={handleActivitySubmit}
+          submitting={savingActivity}
+          error={activityModalError}
+        />
+      ) : null}
+
+      {pendingDeleteActivity ? (
+        <ConfirmDialog
+          title="Remove activity?"
+          description={`Remove ${activityLabel(pendingDeleteActivity.item)} from ${pendingDeleteActivity.stop.city?.name || "this destination"}?`}
+          confirmLabel="Remove activity"
+          busyLabel="Removing…"
+          onCancel={() => setPendingDeleteActivity(null)}
+          onConfirm={confirmDeleteActivity}
           busy={deleting}
         />
       ) : null}

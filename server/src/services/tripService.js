@@ -49,7 +49,7 @@ const detailInclude = {
       activities: {
         orderBy: [{ scheduledDate: "asc" }, { position: "asc" }],
         include: {
-          activity: true,
+          activity: { include: { city: true } },
         },
       },
     },

@@ -4,7 +4,8 @@ import CityResultCard from "../search/CityResultCard.jsx";
 import CitySearchBox from "../search/CitySearchBox.jsx";
 import { Field, inputClassName } from "../../components/TripForm.jsx";
 import useDebouncedValue from "../../hooks/useDebouncedValue.js";
-import { ApiError } from "../../lib/api.js";
+import { defaultStopDates } from "../../lib/dates.js";
+import { ApiError, explainApiError } from "../../lib/api.js";
 import { searchCities } from "../../lib/stopsApi.js";
 import { fieldError, validateStopDates } from "../../lib/validation.js";
 
@@ -12,19 +13,21 @@ export default function AddStopModal({
   trip,
   existingCityIds = [],
   initialStop,
+  lockCity = false,
   onClose,
   onSubmit,
   submitting,
   error,
 }) {
   const isEdit = Boolean(initialStop?.id);
+  const defaults = trip ? defaultStopDates(trip) : { startDate: "", endDate: "" };
   const [query, setQuery] = useState("");
   const [results, setResults] = useState([]);
   const [searching, setSearching] = useState(false);
   const [searchError, setSearchError] = useState("");
   const [selectedCity, setSelectedCity] = useState(initialStop?.city || null);
-  const [startDate, setStartDate] = useState(initialStop?.startDate || trip.startDate);
-  const [endDate, setEndDate] = useState(initialStop?.endDate || trip.endDate);
+  const [startDate, setStartDate] = useState(initialStop?.startDate || defaults.startDate);
+  const [endDate, setEndDate] = useState(initialStop?.endDate || defaults.endDate);
   const [notes, setNotes] = useState(initialStop?.notes || "");
   const [stayCost, setStayCost] = useState(
     initialStop?.stayCost != null ? String(initialStop.stayCost) : "0",
@@ -94,14 +97,22 @@ export default function AddStopModal({
     }
 
     try {
-      await onSubmit({
-        cityId: selectedCity.id,
-        startDate,
-        endDate,
-        notes: notes.trim() || null,
-        stayCost: isEdit ? Number(stayCost) : undefined,
-        transportCost: isEdit ? Number(transportCost) : undefined,
-      });
+      if (isEdit) {
+        await onSubmit({
+          cityId: selectedCity.id,
+          startDate,
+          endDate,
+          notes: notes.trim() || null,
+          stayCost: Number(stayCost),
+          transportCost: Number(transportCost),
+        });
+      } else {
+        await onSubmit({
+          cityId: selectedCity.id,
+          startDate,
+          endDate,
+        });
+      }
     } catch (err) {
       if (err instanceof ApiError && err.details) {
         setErrors({
@@ -110,6 +121,10 @@ export default function AddStopModal({
           city: fieldError(err.details, "cityId"),
         });
       }
+      setErrors((current) => ({
+        ...current,
+        form: explainApiError(err, "Unable to add this destination"),
+      }));
     }
   }
 
@@ -128,7 +143,7 @@ export default function AddStopModal({
           </button>
         </div>
 
-        {!isEdit || !selectedCity ? (
+        {!lockCity && (!isEdit || !selectedCity) ? (
           <div className="mb-4">
             <CitySearchBox value={query} onChange={setQuery} />
             {searching ? (
@@ -162,7 +177,7 @@ export default function AddStopModal({
             <span className="font-medium">
               {selectedCity.name}, {selectedCity.country}
             </span>
-            {!isEdit ? (
+            {!isEdit && !lockCity ? (
               <button
                 type="button"
                 className="ml-2 text-teal"
@@ -229,7 +244,9 @@ export default function AddStopModal({
               </div>
             </>
           ) : null}
-          {error ? <p className="mb-3 text-sm text-coral">{error}</p> : null}
+          {error || errors.form ? (
+            <p className="mb-3 text-sm text-coral">{error || errors.form}</p>
+          ) : null}
           <div className="mt-2 flex justify-end gap-2">
             <button
               type="button"

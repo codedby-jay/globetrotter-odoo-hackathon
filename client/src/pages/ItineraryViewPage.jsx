@@ -161,7 +161,13 @@ export default function ItineraryViewPage() {
         <div className="space-y-3">
           <h2 className="text-lg font-semibold">Itinerary</h2>
           {trip.stops.map((stop, index) => (
-            <StopCard key={stop.id} stop={stop} index={index} readOnly />
+            <StopCard
+              key={stop.id}
+              stop={stop}
+              index={index}
+              currency={trip.currency}
+              readOnly
+            />
           ))}
         </div>
       )}

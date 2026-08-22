@@ -1,4 +1,4 @@
-import { dateOnly, money } from "./dates.js";
+import { addMinutesToClock, dateOnly, formatClock, money } from "./dates.js";
 
 export function serializeCity(city) {
   if (!city) {
@@ -30,27 +30,48 @@ export function serializeStop(stop) {
     stayCost: money(stop.stayCost) ?? 0,
     transportCost: money(stop.transportCost) ?? 0,
     city: serializeCity(stop.city),
-    activities: (stop.activities ?? []).map((item) => ({
-      id: item.id,
-      scheduledDate: dateOnly(item.scheduledDate),
-      startTime: item.startTime,
-      durationMin: item.durationMin,
-      cost: money(item.cost),
-      costCategory: item.costCategory,
-      position: item.position,
-      notes: item.notes,
-      customName: item.customName,
-      customDescription: item.customDescription,
-      activity: item.activity
-        ? {
-            id: item.activity.id,
-            name: item.activity.name,
-            type: item.activity.type,
-            imageUrl: item.activity.imageUrl,
-            durationMin: item.activity.durationMin,
-            typicalCost: money(item.activity.typicalCost),
-          }
-        : null,
-    })),
+    activities: (stop.activities ?? []).map(serializeStopActivity),
+  };
+}
+
+export function serializeActivity(activity) {
+  if (!activity) {
+    return null;
+  }
+  return {
+    id: activity.id,
+    externalId: activity.externalId,
+    name: activity.name,
+    description: activity.description,
+    type: activity.type,
+    cityId: activity.cityId,
+    city: activity.city ? serializeCity(activity.city) : null,
+    lat: activity.latitude,
+    lng: activity.longitude,
+    typicalCost: money(activity.typicalCost) ?? 0,
+    durationMin: activity.durationMin,
+    imageUrl: activity.imageUrl,
+    popularity: activity.popularity,
+  };
+}
+
+export function serializeStopActivity(item) {
+  const startTime = formatClock(item.startTime);
+  const durationMin = item.durationMin ?? item.activity?.durationMin ?? null;
+  return {
+    id: item.id,
+    stopId: item.stopId,
+    activityId: item.activityId,
+    scheduledDate: dateOnly(item.scheduledDate),
+    startTime,
+    endTime: addMinutesToClock(startTime, durationMin),
+    durationMin,
+    cost: money(item.cost) ?? 0,
+    costCategory: item.costCategory,
+    position: item.position,
+    notes: item.notes,
+    customName: item.customName,
+    customDescription: item.customDescription,
+    activity: serializeActivity(item.activity),
   };
 }
