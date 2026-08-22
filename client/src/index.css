@@ -26,3 +26,31 @@ body {
     -apple-system,
     sans-serif;
 }
+
+.leaflet-container {
+  font-family: inherit;
+  background: var(--color-sand);
+}
+
+.gt-map-marker {
+  background: transparent;
+  border: 0;
+}
+
+.gt-map-pin {
+  display: flex;
+  height: 32px;
+  width: 32px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  background: #0f6c6c;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  box-shadow: 0 2px 6px rgba(31, 42, 46, 0.25);
+}
+
+.gt-map-pin-active {
+  background: #e07a5f;
+}

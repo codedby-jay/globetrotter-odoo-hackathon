@@ -4,12 +4,12 @@ export default function TripSubnav({ tripId }) {
   const items = [
     { to: `/trips/${tripId}`, label: "View", end: true },
     { to: `/trips/${tripId}/edit`, label: "Builder" },
+    { to: `/search/cities?tripId=${tripId}`, label: "Destinations" },
     { to: `/trips/${tripId}/calendar`, label: "Calendar" },
     { to: `/trips/${tripId}/budget`, label: "Budget" },
+    { to: `/trips/${tripId}/map`, label: "Map" },
     { to: `/trips/${tripId}/share`, label: "Share" },
     { to: `/trips/${tripId}/assistant`, label: "AI Assistant" },
-    { to: `/trips/${tripId}/odoo`, label: "Odoo" },
-    { to: `/search/cities?tripId=${tripId}`, label: "Destinations" },
   ];
 
   return (

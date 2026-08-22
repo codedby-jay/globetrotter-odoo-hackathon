@@ -2,11 +2,11 @@
 
 Personalized multi-city travel planning for the Odoo × LDCE Ahmedabad Hackathon 26.
 
-This repository contains the project foundation, PostgreSQL / Prisma travel graph, JWT authentication, Trip CRUD, live city search, itinerary stops, activities, trip budget / expense tracking, a trip calendar timeline, public trip sharing with copy-trip, a server-side Odoo export integration, and an optional AI trip assistant.
+This repository contains the project foundation, PostgreSQL / Prisma travel graph, JWT authentication, Trip CRUD, live city search, itinerary stops, activities, trip budget / expense tracking, a trip calendar timeline, public trip sharing with copy-trip, an optional AI trip assistant, and an interactive trip map.
 
 ## Stack
 
-- Frontend: React, Vite, Tailwind CSS, React Router, Lucide React, Recharts
+- Frontend: React, Vite, Tailwind CSS, React Router, Lucide React, Recharts, Leaflet / React Leaflet
 - Backend: Node.js, Express, Prisma, JWT, bcrypt, Zod
 - Database: PostgreSQL
 
@@ -257,5 +257,21 @@ The page shows “AI Assistant is not configured yet.” when `AI_API_KEY` is mi
 - No API keys in the client bundle or API JSON
 - Provider timeouts and redacted error logs
 - Prompts include only trip planning fields (no passwords, no other users)
+
+## Trip map
+
+Owner-only page: `/trips/:id/map` (trip tab **Map**).
+
+It reuses `GET /api/v1/trips/:id`. There is no extra map API. The map reads `trip.stops` and each city's `lat` / `lng` (serialized from `City.latitude` / `City.longitude`).
+
+Tiles come from **OpenStreetMap** via **Leaflet** and **React Leaflet**. No Google Maps key and no paid map API.
+
+Markers are numbered in itinerary `position` order. A teal polyline labeled **Trip route** connects those points.
+
+**The displayed route is a visual connection between itinerary destinations and is not a real road/navigation route.** GlobeTrotter does not call a routing/directions service.
+
+Destinations without valid coordinates are omitted from the map (coordinates are never invented). The private map is JWT + trip-owner only, same as other trip pages. Public share APIs were not changed for this feature.
+
+How to try it: log in, open a trip with destinations, click **Map**. Empty trips show **Add destination**, which uses the existing city search flow (`/search/cities?tripId=…`).
 
 
