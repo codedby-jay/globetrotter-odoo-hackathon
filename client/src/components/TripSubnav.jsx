@@ -7,6 +7,7 @@ export default function TripSubnav({ tripId }) {
     { to: `/trips/${tripId}/calendar`, label: "Calendar" },
     { to: `/trips/${tripId}/budget`, label: "Budget" },
     { to: `/trips/${tripId}/share`, label: "Share" },
+    { to: `/trips/${tripId}/odoo`, label: "Odoo" },
     { to: `/search/cities?tripId=${tripId}`, label: "Destinations" },
   ];
 
