@@ -2,7 +2,7 @@
 
 Personalized multi-city travel planning for the Odoo × LDCE Ahmedabad Hackathon 26.
 
-This repository currently contains the **project foundation only**: a Vite + React client, an Express API with a health check, Prisma connected to PostgreSQL, and Docker Compose for a local database. Authentication, models, and product features are not implemented yet.
+This repository contains the project foundation plus the PostgreSQL / Prisma travel graph. Authentication and product APIs are not implemented yet.
 
 ## Stack
 
@@ -13,7 +13,7 @@ This repository currently contains the **project foundation only**: a Vite + Rea
 ## Prerequisites
 
 - Node.js 22+
-- Docker (for local PostgreSQL)
+- PostgreSQL 16 (Docker Compose **or** a local PostgreSQL install)
 
 ## Setup
 
@@ -26,11 +26,27 @@ cd ../server && npm install
 
 The API loads `.env` from the repository root. Prisma CLI loads `server/.env`.
 
+If you install PostgreSQL without Docker, change `DATABASE_URL` in both env files to your local user and password.
+
 ## Start PostgreSQL
+
+Docker (if installed):
 
 ```bash
 docker compose up -d
 ```
+
+Without Docker, start your local PostgreSQL service and create a database named `globetrotter`.
+
+## Database migration and seed
+
+```bash
+cd server
+npx prisma migrate dev
+npx prisma db seed
+```
+
+Demo account (for later auth work): `demo@globetrotter.dev` / `GlobetrotterDemo1`
 
 ## Start the backend
 
@@ -54,4 +70,4 @@ The app is at `http://localhost:5173`. Vite proxies `/api` to the backend.
 
 ## Environment variables
 
-See `.env.example`. Copy it to `.env` at the repository root. Do not commit secrets.
+See `.env.example`. Copy it to `.env` at the repository root and to `server/.env`. Do not commit secrets.
