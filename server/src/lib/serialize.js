@@ -55,6 +55,22 @@ export function serializeActivity(activity) {
   };
 }
 
+export function serializeExpense(expense, currency) {
+  const expenseDate = dateOnly(expense.incurredOn);
+  return {
+    id: expense.id,
+    tripId: expense.tripId,
+    stopId: expense.stopId,
+    category: expense.category,
+    description: expense.label,
+    label: expense.label,
+    amount: money(expense.amount) ?? 0,
+    currency,
+    expenseDate,
+    incurredOn: expenseDate,
+  };
+}
+
 export function serializeStopActivity(item) {
   const startTime = formatClock(item.startTime);
   const durationMin = item.durationMin ?? item.activity?.durationMin ?? null;

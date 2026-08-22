@@ -10,7 +10,10 @@ import {
 } from "lucide-react";
 import ConfirmDialog from "../components/ConfirmDialog.jsx";
 import TripSubnav from "../components/TripSubnav.jsx";
+import BudgetSummary from "../features/budget/BudgetSummary.jsx";
 import StopCard from "../features/itinerary/StopCard.jsx";
+import { explainApiError } from "../lib/api.js";
+import { getBudgetSummary } from "../lib/expensesApi.js";
 import { deleteTrip, getTrip } from "../lib/tripsApi.js";
 import { formatDateRange, formatMoney } from "../lib/dates.js";
 
@@ -18,6 +21,7 @@ export default function ItineraryViewPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [trip, setTrip] = useState(null);
+  const [summary, setSummary] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [imageFailed, setImageFailed] = useState(false);
@@ -30,14 +34,15 @@ export default function ItineraryViewPage() {
       setLoading(true);
       setError("");
       try {
-        const data = await getTrip(id);
+        const [data, budget] = await Promise.all([getTrip(id), getBudgetSummary(id)]);
         if (!cancelled) {
           setTrip(data.trip);
+          setSummary(budget);
           setImageFailed(false);
         }
       } catch (err) {
         if (!cancelled) {
-          setError(err.message || "Unable to load trip");
+          setError(explainApiError(err, "Unable to load trip"));
         }
       } finally {
         if (!cancelled) {
@@ -142,6 +147,21 @@ export default function ItineraryViewPage() {
           </div>
         </div>
       </div>
+
+      {summary ? (
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-semibold">Budget</h2>
+            <Link
+              to={`/trips/${trip.id}/budget`}
+              className="text-sm font-medium text-teal hover:text-teal-dark"
+            >
+              Manage expenses
+            </Link>
+          </div>
+          <BudgetSummary summary={summary} compact />
+        </div>
+      ) : null}
 
       {(trip.stops || []).length === 0 ? (
         <div className="rounded-2xl border border-dashed border-sand bg-white px-6 py-10 text-center">

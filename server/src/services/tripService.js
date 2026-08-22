@@ -2,7 +2,7 @@ import { prisma } from "../lib/prisma.js";
 import { HttpError } from "../lib/httpError.js";
 import { createShareSlug } from "../lib/shareSlug.js";
 import { dateOnly, money, toDate, utcToday } from "../lib/dates.js";
-import { serializeStop } from "../lib/serialize.js";
+import { serializeExpense, serializeStop } from "../lib/serialize.js";
 
 const SLUG_ATTEMPTS = 5;
 
@@ -28,14 +28,7 @@ function serializeTripDetail(trip) {
   return {
     ...serializeTripSummary(trip),
     stops: (trip.stops ?? []).map(serializeStop),
-    expenses: (trip.expenses ?? []).map((expense) => ({
-      id: expense.id,
-      category: expense.category,
-      label: expense.label,
-      amount: money(expense.amount),
-      incurredOn: dateOnly(expense.incurredOn),
-      stopId: expense.stopId,
-    })),
+    expenses: (trip.expenses ?? []).map((expense) => serializeExpense(expense, trip.currency)),
   };
 }
 

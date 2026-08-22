@@ -14,6 +14,20 @@ export function formatDateRange(startDate, endDate) {
   return `${formatDate(startDate)} – ${formatDate(endDate)}`;
 }
 
+export function formatCurrency(amount, currency = "USD") {
+  const value = Number(amount);
+  const safe = Number.isFinite(value) ? value : 0;
+  try {
+    return new Intl.NumberFormat(undefined, {
+      style: "currency",
+      currency,
+      maximumFractionDigits: 2,
+    }).format(safe);
+  } catch {
+    return `${currency} ${safe}`;
+  }
+}
+
 export function formatMoney(amount, currency = "USD") {
   if (amount === null || amount === undefined) {
     return "No budget set";

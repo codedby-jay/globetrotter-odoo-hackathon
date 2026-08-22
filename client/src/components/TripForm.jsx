@@ -11,7 +11,7 @@ export function Field({ label, error, children }) {
   );
 }
 
-const CURRENCIES = ["USD", "EUR", "INR", "GBP", "AUD", "CAD"];
+export const CURRENCIES = ["USD", "EUR", "INR", "GBP", "AUD", "CAD"];
 
 export default function TripForm({
   initialValues,
