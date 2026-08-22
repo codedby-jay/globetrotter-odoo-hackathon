@@ -29,6 +29,9 @@ export function explainApiError(error, fallback = "Something went wrong. Please 
     return error?.message || fallback;
   }
   if (error.status === 401) {
+    if (error.message && error.message !== "Request failed") {
+      return error.message;
+    }
     return "Your session has expired. Please log in again.";
   }
   if (error.status === 403) {
@@ -72,14 +75,27 @@ export async function apiRequest(path, { method = "GET", body, token } = {}) {
 
   const response = await fetch(`/api/v1${path}`, options);
   const isJson = response.headers.get("content-type")?.includes("application/json");
-  const payload = isJson ? await response.json() : null;
+  let payload = null;
+  if (isJson) {
+    payload = await response.json();
+  } else {
+    try {
+      await response.text();
+    } catch {
+      // ignore empty bodies
+    }
+  }
 
   if (!response.ok) {
     if (response.status === 401 && !path.startsWith("/auth/")) {
       clearStoredToken();
       window.dispatchEvent(new Event("globetrotter:session-expired"));
     }
-    throw new ApiError(payload?.error || "Request failed", {
+    const fallback =
+      !isJson && (response.status === 502 || response.status >= 500)
+        ? "Unable to connect to the server. Start it with: cd server && npm run dev"
+        : "Request failed";
+    throw new ApiError(payload?.error || fallback, {
       status: response.status,
       details: payload?.details,
     });
