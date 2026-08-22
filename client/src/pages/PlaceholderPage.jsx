@@ -1,11 +1,9 @@
 export default function PlaceholderPage({ title, description }) {
   return (
-    <section className="rounded-2xl border border-sand bg-white p-6 shadow-sm md:p-8">
-      <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-teal">
-        Placeholder
-      </p>
-      <h1 className="mb-3 text-2xl font-semibold md:text-3xl">{title}</h1>
-      <p className="max-w-2xl text-muted">{description}</p>
+    <section className="gt-card p-6 md:p-8">
+      <p className="gt-eyebrow">Coming soon</p>
+      <h1 className="gt-title mt-2">{title}</h1>
+      <p className="gt-lede mt-3">{description}</p>
     </section>
   );
 }

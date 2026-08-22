@@ -6,6 +6,7 @@ import {
   formatDuration,
   formatTimeDisplay,
 } from "../../lib/dates.js";
+import Button from "../../ui/Button.jsx";
 
 export default function CalendarActivityCard({
   item,
@@ -21,14 +22,14 @@ export default function CalendarActivityCard({
   const notes = item.notes || item.customDescription || item.activity?.description;
 
   return (
-    <article className="rounded-xl border border-sand bg-cream/60 p-4">
+    <article className="rounded-xl border border-line bg-white p-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0">
-          <p className="text-xs font-semibold uppercase tracking-wide text-teal">
+          <p className="gt-eyebrow">
             {start || "Unscheduled"}
             {end ? ` – ${end}` : ""}
           </p>
-          <h3 className="mt-1 text-base font-semibold">{name}</h3>
+          <h3 className="mt-1 font-display text-lg font-semibold tracking-tight">{name}</h3>
           <p className="mt-1 text-sm text-muted">{category}</p>
           {cityName ? (
             <p className="mt-1 flex items-center gap-1 text-sm text-muted">
@@ -43,19 +44,15 @@ export default function CalendarActivityCard({
                 {duration}
               </span>
             ) : null}
-            {item.cost != null ? <span>{formatCurrency(item.cost, currency)}</span> : null}
+            {item.cost != null ? <span className="font-medium">{formatCurrency(item.cost, currency)}</span> : null}
           </div>
           {notes ? <p className="mt-2 text-sm text-muted">{notes}</p> : null}
         </div>
         {onEdit ? (
-          <button
-            type="button"
-            className="inline-flex items-center gap-1 self-start rounded-lg border border-sand bg-white px-3 py-1.5 text-sm hover:bg-sand"
-            onClick={onEdit}
-          >
+          <Button variant="secondary" size="sm" onClick={onEdit}>
             <Pencil size={14} />
             Edit
-          </button>
+          </Button>
         ) : null}
       </div>
     </article>

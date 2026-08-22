@@ -1,67 +1,65 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
 import { CalendarRange, MapPinned, Pencil, Trash2, Wallet } from "lucide-react";
-import { formatDateRange, formatMoney } from "../lib/dates.js";
+import { formatDateRange, formatMoney, tripLengthLabel } from "../lib/dates.js";
+import { tripCoverFallback, tripCoverSrc } from "../lib/travelArt.js";
+import Button from "../ui/Button.jsx";
+import CoverImage from "./CoverImage.jsx";
 
 export default function TripCard({ trip, onDelete }) {
-  const [imageFailed, setImageFailed] = useState(false);
-  const showImage = trip.coverPhotoUrl && !imageFailed;
+  const length = tripLengthLabel(trip.startDate, trip.endDate);
+  const destinations = trip.destinationCount ?? 0;
+  const destinationLabel = `${destinations} ${destinations === 1 ? "destination" : "destinations"}`;
 
   return (
-    <article className="overflow-hidden rounded-2xl border border-sand bg-white shadow-sm transition-shadow hover:shadow-md">
-      <div className="relative h-36 bg-gradient-to-br from-teal to-teal-dark">
-        {showImage ? (
-          <img
-            src={trip.coverPhotoUrl}
-            alt=""
-            className="h-full w-full object-cover"
-            onError={() => setImageFailed(true)}
-          />
-        ) : (
-          <div className="flex h-full items-end p-4 text-white/90">
-            <MapPinned size={28} />
-          </div>
-        )}
+    <article className="gt-ticket gt-card-hover overflow-hidden">
+      <div className="relative h-44 overflow-hidden bg-navy">
+        <CoverImage
+          src={tripCoverSrc(trip)}
+          fallbackSrc={tripCoverFallback(trip)}
+          alt=""
+          className="h-full w-full object-cover"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-navy via-navy/25 to-transparent" />
+        <div className="absolute top-3 left-3 rounded-full bg-white/92 px-2.5 py-1 text-[0.65rem] font-bold uppercase tracking-[0.12em] text-navy">
+          {length || "Trip"}
+        </div>
+        <div className="absolute bottom-3 left-4 right-4 text-white">
+          <p className="text-[0.65rem] font-semibold uppercase tracking-[0.14em] text-white/75">
+            {destinations ? destinationLabel : "No destinations yet"}
+          </p>
+          <h2 className="font-display text-xl font-semibold tracking-tight">{trip.name}</h2>
+        </div>
       </div>
-      <div className="space-y-3 p-4">
-        <h2 className="text-lg font-semibold">{trip.name}</h2>
+      <div className="gt-ticket-stub space-y-3 p-4">
         <p className="flex items-center gap-2 text-sm text-muted">
-          <CalendarRange size={16} />
+          <CalendarRange size={15} className="text-teal" />
           {formatDateRange(trip.startDate, trip.endDate)}
         </p>
-        <div className="flex flex-wrap gap-3 text-sm text-muted">
-          <span className="flex items-center gap-1.5">
-            <MapPinned size={16} />
-            {trip.destinationCount}{" "}
-            {trip.destinationCount === 1 ? "destination" : "destinations"}
+        <div className="flex flex-wrap gap-x-4 gap-y-2 text-sm text-muted">
+          <span className="inline-flex items-center gap-1.5">
+            <MapPinned size={15} className="text-teal" />
+            {destinationLabel}
           </span>
-          <span className="flex items-center gap-1.5">
-            <Wallet size={16} />
+          <span className="inline-flex items-center gap-1.5">
+            <Wallet size={15} className="text-teal" />
             {formatMoney(trip.budgetLimit, trip.currency)}
           </span>
         </div>
         <div className="flex flex-wrap gap-2 pt-1">
-          <Link
-            to={`/trips/${trip.id}`}
-            className="rounded-lg bg-teal px-3 py-1.5 text-sm font-medium text-white hover:bg-teal-dark"
-          >
+          <Button variant="primary" size="sm" to={`/trips/${trip.id}`}>
             View
-          </Link>
-          <Link
-            to={`/trips/${trip.id}/edit`}
-            className="inline-flex items-center gap-1 rounded-lg border border-sand px-3 py-1.5 text-sm font-medium hover:bg-sand"
-          >
-            <Pencil size={14} />
-            Edit
-          </Link>
-          <button
-            type="button"
-            className="inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-sm font-medium text-coral hover:bg-sand"
-            onClick={() => onDelete(trip)}
-          >
-            <Trash2 size={14} />
-            Delete
-          </button>
+          </Button>
+          {onDelete ? (
+            <>
+              <Button variant="secondary" size="sm" to={`/trips/${trip.id}/edit`}>
+                <Pencil size={13} />
+                Edit
+              </Button>
+              <Button variant="danger" size="sm" onClick={() => onDelete(trip)}>
+                <Trash2 size={13} />
+                Delete
+              </Button>
+            </>
+          ) : null}
         </div>
       </div>
     </article>

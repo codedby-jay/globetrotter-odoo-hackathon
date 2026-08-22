@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { NavLink, Outlet } from "react-router-dom";
+import { NavLink, Outlet, useLocation } from "react-router-dom";
 import {
   Compass,
   LayoutDashboard,
@@ -10,10 +10,12 @@ import {
   X,
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext.jsx";
+import Button from "../ui/Button.jsx";
+import UserAvatar from "../components/UserAvatar.jsx";
 
 const navItems = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard },
-  { to: "/trips", label: "My Trips", icon: MapPinned },
+  { to: "/trips", label: "Trips", icon: MapPinned },
   { to: "/search/cities", label: "Cities", icon: Compass },
   { to: "/search/activities", label: "Activities", icon: Search },
   { to: "/profile", label: "Profile", icon: UserRound },
@@ -21,84 +23,106 @@ const navItems = [
 
 function linkClass({ isActive }) {
   return [
-    "flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
-    isActive
-      ? "bg-teal text-white"
-      : "text-ink/80 hover:bg-sand hover:text-teal-dark",
+    "relative flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+    isActive ? "bg-teal-soft text-teal-dark" : "text-muted hover:bg-sand hover:text-ink",
   ].join(" ");
 }
 
 export default function AppShell() {
   const [menuOpen, setMenuOpen] = useState(false);
   const { user, logout, loading } = useAuth();
+  const { pathname } = useLocation();
+  const isAuthRoute = ["/login", "/signup", "/forgot-password", "/reset-password"].includes(
+    pathname,
+  );
 
   return (
-    <div className="min-h-svh bg-cream text-ink">
-      <header className="sticky top-0 z-20 border-b border-sand bg-cream/95 backdrop-blur">
+    <div className="min-h-svh text-ink">
+      <header className="gt-header sticky top-0 z-20">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3">
-          <NavLink to="/" className="flex items-center gap-2 font-semibold">
-            <span className="flex h-9 w-9 items-center justify-center rounded-full bg-teal text-white">
+          <NavLink to={user ? "/" : "/login"} className="flex items-center gap-2.5">
+            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[linear-gradient(145deg,#1a7a72,#0d5757)] font-display text-sm font-semibold text-white shadow-sm">
               GT
             </span>
-            <span>GlobeTrotter</span>
+            <span className="font-display text-lg font-semibold tracking-tight">GlobeTrotter</span>
           </NavLink>
 
           {user ? (
-            <nav className="hidden items-center gap-1 md:flex">
+            <nav className="hidden items-center gap-0.5 md:flex" aria-label="Primary">
               {navItems.map(({ to, label, icon: Icon }) => (
-                <NavLink key={to} to={to} end={to === "/"} className={linkClass}>
-                  <Icon size={16} />
+                <NavLink key={to} to={to} end className={linkClass}>
+                  <Icon size={16} aria-hidden />
                   {label}
                 </NavLink>
               ))}
             </nav>
           ) : null}
 
-          <div className="hidden items-center gap-2 md:flex">
+          <div className="hidden items-center gap-3 md:flex">
             {loading ? null : user ? (
               <>
-                <span className="max-w-40 truncate text-sm text-muted">{user.name}</span>
-                <button
-                  type="button"
-                  className="rounded-lg px-3 py-2 text-sm font-medium text-ink hover:bg-sand"
-                  onClick={() => logout()}
+                <Button variant="coral" size="sm" to="/trips/new">
+                  Plan trip
+                </Button>
+                <NavLink
+                  to="/profile"
+                  className={({ isActive }) =>
+                    [
+                      "flex items-center gap-2 rounded-full border px-2 py-1 pr-3 no-underline",
+                      isActive ? "border-teal bg-teal-soft" : "border-line bg-cream",
+                    ].join(" ")
+                  }
+                  aria-label="Open profile"
                 >
+                  <UserAvatar user={user} size="sm" />
+                  <span className="max-w-36 truncate text-sm font-medium text-ink">{user.name}</span>
+                </NavLink>
+                <Button variant="ghost" size="sm" onClick={() => logout()}>
                   Log out
-                </button>
+                </Button>
               </>
             ) : (
               <>
-                <NavLink to="/login" className={linkClass}>
+                <Button variant="ghost" to="/login">
                   Log in
-                </NavLink>
-                <NavLink
-                  to="/signup"
-                  className="rounded-lg bg-coral px-3 py-2 text-sm font-medium text-white hover:opacity-90"
-                >
+                </Button>
+                <Button variant="coral" to="/signup">
                   Sign up
-                </NavLink>
+                </Button>
               </>
             )}
           </div>
 
+          <div className="flex items-center gap-2 md:contents">
+          {user ? (
+            <NavLink
+              to="/profile"
+              className="inline-flex shrink-0 md:hidden"
+              aria-label="Open profile"
+            >
+              <UserAvatar user={user} size="sm" />
+            </NavLink>
+          ) : null}
+
           <button
             type="button"
-            className="rounded-lg p-2 text-ink md:hidden"
+            className="inline-flex items-center justify-center rounded-lg p-2 text-muted hover:bg-sand md:hidden"
             onClick={() => setMenuOpen((open) => !open)}
             aria-label={menuOpen ? "Close menu" : "Open menu"}
           >
             {menuOpen ? <X size={22} /> : <Menu size={22} />}
           </button>
+          </div>
         </div>
 
         {menuOpen ? (
-          <nav className="space-y-1 border-t border-sand px-4 py-3 md:hidden">
+          <nav className="space-y-1 border-t border-line px-4 py-3 md:hidden" aria-label="Mobile">
             {user
               ? navItems.map(({ to, label, icon: Icon }) => (
                   <NavLink
                     key={to}
                     to={to}
-                    end={to === "/"}
+                    end
                     className={linkClass}
                     onClick={() => setMenuOpen(false)}
                   >
@@ -110,7 +134,7 @@ export default function AppShell() {
             {user ? (
               <button
                 type="button"
-                className="flex w-full items-center rounded-lg px-3 py-2 text-left text-sm font-medium hover:bg-sand"
+                className="gt-btn gt-btn-ghost w-full justify-start"
                 onClick={() => {
                   setMenuOpen(false);
                   logout();
@@ -120,16 +144,12 @@ export default function AppShell() {
               </button>
             ) : (
               <>
-                <NavLink
-                  to="/login"
-                  className={linkClass}
-                  onClick={() => setMenuOpen(false)}
-                >
+                <NavLink to="/login" className={linkClass} onClick={() => setMenuOpen(false)}>
                   Log in
                 </NavLink>
                 <NavLink
                   to="/signup"
-                  className="flex items-center rounded-lg bg-coral px-3 py-2 text-sm font-medium text-white"
+                  className="gt-btn gt-btn-coral w-full"
                   onClick={() => setMenuOpen(false)}
                 >
                   Sign up
@@ -140,7 +160,13 @@ export default function AppShell() {
         ) : null}
       </header>
 
-      <main className="mx-auto w-full max-w-6xl px-4 py-8">
+      <main
+        className={
+          isAuthRoute
+            ? "w-full min-w-0"
+            : "mx-auto w-full min-w-0 max-w-6xl px-4 py-8 md:py-10"
+        }
+      >
         <Outlet />
       </main>
     </div>

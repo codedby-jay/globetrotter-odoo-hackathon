@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { Luggage } from "lucide-react";
+import EmptyState from "../components/EmptyState.jsx";
+import PageLoader from "../components/PageLoader.jsx";
 import TripSubnav from "../components/TripSubnav.jsx";
 import TripMap from "../features/map/TripMap.jsx";
 import { explainApiError } from "../lib/api.js";
@@ -44,13 +45,7 @@ export default function TripMapPage() {
   const mapped = useMemo(() => mapStopsFromTrip(trip), [trip]);
 
   if (loading) {
-    return (
-      <section className="space-y-6">
-        <div className="h-8 w-64 animate-pulse rounded-full bg-sand" />
-        <div className="h-[420px] animate-pulse rounded-2xl bg-sand md:h-[560px]" />
-        <p className="text-sm text-muted">Loading trip map…</p>
-      </section>
-    );
+    return <PageLoader label="Loading trip map…" />;
   }
 
   if (!trip) {
@@ -61,9 +56,9 @@ export default function TripMapPage() {
     <section className="space-y-6">
       <TripSubnav tripId={id} />
       <div>
-        <p className="text-xs font-semibold uppercase tracking-wide text-teal">Trip map</p>
-        <h1 className="text-2xl font-semibold">{trip.name}</h1>
-        <p className="mt-1 max-w-2xl text-sm text-muted">
+        <p className="gt-eyebrow">Trip map</p>
+        <h1 className="gt-title mt-2">{trip.name}</h1>
+        <p className="gt-lede mt-2">
           Destinations in itinerary order. The displayed route is a visual connection between
           itinerary destinations and is not a real road/navigation route.
         </p>
@@ -71,27 +66,34 @@ export default function TripMapPage() {
       {error ? <p className="text-sm text-coral">{error}</p> : null}
 
       {mapped.all.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-sand bg-white px-6 py-12 text-center">
-          <Luggage className="mx-auto mb-3 text-teal" size={32} />
-          <h2 className="text-lg font-semibold">No destinations yet</h2>
-          <p className="mx-auto mt-1 max-w-lg text-sm text-muted">
-            Add destinations to see your trip on the map.
-          </p>
-          <Link
-            to={`/search/cities?tripId=${id}`}
-            className="mt-4 inline-flex rounded-lg bg-teal px-4 py-2 text-sm font-medium text-white hover:bg-teal-dark"
-          >
-            Add destination
-          </Link>
-        </div>
+        <EmptyState
+          title="No destinations added yet."
+          description="Add destinations to see your trip on the map."
+          action={
+            <Link
+              to={`/search/cities?tripId=${id}`}
+              className="inline-flex rounded-lg bg-teal px-4 py-2 text-sm font-medium text-white hover:bg-teal-dark"
+            >
+              Add destination
+            </Link>
+          }
+        />
       ) : (
         <div className="grid gap-6 lg:grid-cols-[minmax(0,1.4fr)_minmax(16rem,0.8fr)]">
           <div>
             {mapped.mappable.length === 0 ? (
-              <div className="flex h-[420px] items-center justify-center rounded-2xl border border-sand bg-white p-6 text-center text-sm text-muted md:h-[560px]">
-                Some destinations cannot be displayed on the map because coordinates are
-                unavailable.
-              </div>
+              <EmptyState
+                title="No destinations with coordinates yet."
+                description="Cities without a valid latitude and longitude are skipped. Search again or add a destination with coordinates."
+                action={
+                  <Link
+                    to={`/search/cities?tripId=${id}`}
+                    className="inline-flex rounded-lg bg-teal px-4 py-2 text-sm font-medium text-white hover:bg-teal-dark"
+                  >
+                    Search cities
+                  </Link>
+                }
+              />
             ) : (
               <TripMap
                 stops={mapped.mappable}
@@ -109,8 +111,8 @@ export default function TripMapPage() {
             ) : null}
           </div>
 
-          <aside className="rounded-2xl border border-sand bg-white p-5 shadow-sm">
-            <h2 className="text-lg font-semibold">Trip Route</h2>
+          <aside className="gt-card p-5">
+            <h2 className="font-display text-xl font-semibold tracking-tight">Trip route</h2>
             <p className="mb-4 text-xs text-muted">Itinerary order, not a driving route.</p>
             <ol>
               {mapped.all.map((stop, index) => {

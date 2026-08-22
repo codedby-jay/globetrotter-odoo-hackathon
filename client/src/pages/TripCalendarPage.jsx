@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { CalendarDays } from "lucide-react";
+import PageLoader from "../components/PageLoader.jsx";
 import TripSubnav from "../components/TripSubnav.jsx";
 import AddActivityModal from "../features/activities/AddActivityModal.jsx";
 import CalendarHeader from "../features/calendar/CalendarHeader.jsx";
@@ -66,7 +67,7 @@ export default function TripCalendarPage() {
   );
 
   async function handleUpdate(payload) {
-    if (!editing) {
+    if (!editing || saving) {
       return;
     }
     setSaving(true);
@@ -85,7 +86,7 @@ export default function TripCalendarPage() {
   }
 
   if (loading) {
-    return <p className="text-sm text-muted">Loading calendar…</p>;
+    return <PageLoader label="Loading calendar…" />;
   }
 
   if (!trip || !calendar) {

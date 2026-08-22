@@ -3,6 +3,7 @@ import { X } from "lucide-react";
 import { CURRENCIES, Field, inputClassName } from "../../components/TripForm.jsx";
 import { ApiError, explainApiError } from "../../lib/api.js";
 import { fieldError, validateExpense } from "../../lib/validation.js";
+import useEscapeClose from "../../hooks/useEscapeClose.js";
 import { CATEGORY_META } from "./BudgetSummary.jsx";
 
 export default function AddExpenseModal({
@@ -19,8 +20,13 @@ export default function AddExpenseModal({
   const [expenseDate, setExpenseDate] = useState(trip?.startDate || "");
   const [errors, setErrors] = useState({});
 
+  useEscapeClose(onClose, !submitting);
+
   async function handleSubmit(event) {
     event.preventDefault();
+    if (submitting) {
+      return;
+    }
     const nextErrors = validateExpense({
       description,
       category,
@@ -55,18 +61,24 @@ export default function AddExpenseModal({
   }
 
   return (
-    <div className="fixed inset-0 z-40 flex items-end justify-center bg-ink/40 p-0 sm:items-center sm:p-4">
-      <div className="max-h-[92vh] w-full max-w-lg overflow-y-auto rounded-t-2xl bg-white p-5 shadow-lg sm:rounded-2xl sm:p-6">
+    <div className="gt-modal-backdrop">
+      <div className="gt-modal max-w-lg">
         <div className="mb-4 flex items-start justify-between gap-3">
           <div>
             <h2 className="text-lg font-semibold">Add expense</h2>
             <p className="text-sm text-muted">{trip?.name}</p>
           </div>
-          <button type="button" className="rounded-lg p-1 hover:bg-sand" onClick={onClose}>
+          <button
+            type="button"
+            className="rounded-lg p-1 hover:bg-sand"
+            onClick={onClose}
+            aria-label="Close"
+          >
             <X size={18} />
           </button>
         </div>
         <form onSubmit={handleSubmit}>
+          <fieldset disabled={submitting} className="contents">
           <Field label="Description" error={errors.description}>
             <input
               className={inputClassName}
@@ -135,12 +147,13 @@ export default function AddExpenseModal({
             </button>
             <button
               type="submit"
-              className="rounded-lg bg-teal px-3 py-2 text-sm font-medium text-white hover:bg-teal-dark disabled:opacity-60"
+            className="gt-btn gt-btn-primary"
               disabled={submitting}
             >
               {submitting ? "Saving…" : "Add Expense"}
             </button>
           </div>
+          </fieldset>
         </form>
       </div>
     </div>

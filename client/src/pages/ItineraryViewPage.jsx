@@ -2,14 +2,17 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import {
   CalendarRange,
-  Luggage,
+  Compass,
   MapPinned,
   Pencil,
   Share2,
+  Sparkles,
   Trash2,
   Wallet,
 } from "lucide-react";
 import ConfirmDialog from "../components/ConfirmDialog.jsx";
+import EmptyState from "../components/EmptyState.jsx";
+import PageLoader from "../components/PageLoader.jsx";
 import TripSubnav from "../components/TripSubnav.jsx";
 import BudgetSummary from "../features/budget/BudgetSummary.jsx";
 import CalendarPreview from "../features/calendar/CalendarPreview.jsx";
@@ -18,7 +21,13 @@ import StopCard from "../features/itinerary/StopCard.jsx";
 import { explainApiError } from "../lib/api.js";
 import { getBudgetSummary } from "../lib/expensesApi.js";
 import { deleteTrip, getTrip } from "../lib/tripsApi.js";
-import { formatDateRange, formatMoney } from "../lib/dates.js";
+import CoverImage from "../components/CoverImage.jsx";
+import { formatCurrency, formatDateRange, formatMoney, tripLengthLabel } from "../lib/dates.js";
+import { tripCoverFallback, tripCoverSrc } from "../lib/travelArt.js";
+import Alert from "../ui/Alert.jsx";
+import Button from "../ui/Button.jsx";
+import SectionHeader from "../ui/SectionHeader.jsx";
+import StatCard from "../ui/StatCard.jsx";
 
 export default function ItineraryViewPage() {
   const { id } = useParams();
@@ -27,7 +36,6 @@ export default function ItineraryViewPage() {
   const [summary, setSummary] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [imageFailed, setImageFailed] = useState(false);
   const [pendingDelete, setPendingDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
@@ -42,7 +50,6 @@ export default function ItineraryViewPage() {
         if (!cancelled) {
           setTrip(data.trip);
           setSummary(budget);
-          setImageFailed(false);
         }
       } catch (err) {
         if (!cancelled) {
@@ -66,95 +73,123 @@ export default function ItineraryViewPage() {
       await deleteTrip(id);
       navigate("/trips");
     } catch (err) {
-      setError(err.message || "Unable to delete trip");
+      setError(explainApiError(err, "Unable to delete trip"));
       setDeleting(false);
     }
   }
 
   if (loading) {
-    return <p className="text-sm text-muted">Loading trip…</p>;
+    return <PageLoader label="Loading trip…" />;
   }
 
   if (error && !trip) {
-    return <p className="text-sm text-coral">{error}</p>;
+    return <Alert>{error}</Alert>;
   }
 
-  const showImage = trip.coverPhotoUrl && !imageFailed;
+  const activityCount = (trip.stops || []).reduce(
+    (sum, stop) => sum + (stop.activities || []).length,
+    0,
+  );
+  const currency = trip.currency || "USD";
+  const length = tripLengthLabel(trip.startDate, trip.endDate);
 
   return (
-    <section className="space-y-6">
+    <section className="space-y-7">
       <TripSubnav tripId={trip.id} />
-      <div className="overflow-hidden rounded-2xl border border-sand bg-white shadow-sm">
-        <div className="h-48 bg-gradient-to-br from-teal to-teal-dark md:h-64">
-          {showImage ? (
-            <img
-              src={trip.coverPhotoUrl}
-              alt=""
-              className="h-full w-full object-cover"
-              onError={() => setImageFailed(true)}
-            />
-          ) : null}
-        </div>
-        <div className="space-y-4 p-6 md:p-8">
-          {error ? <p className="text-sm text-coral">{error}</p> : null}
-          <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-wide text-teal">
-                Trip overview
-              </p>
-              <h1 className="text-2xl font-semibold md:text-3xl">{trip.name}</h1>
-              {trip.description ? (
-                <p className="mt-2 max-w-2xl text-muted">{trip.description}</p>
-              ) : null}
-            </div>
-            <div className="flex flex-wrap gap-2">
-              <Link
-                to={`/trips/${trip.id}/edit`}
-                className="inline-flex items-center gap-1 rounded-lg bg-teal px-3 py-2 text-sm font-medium text-white hover:bg-teal-dark"
-              >
-                <Pencil size={14} />
-                Edit
-              </Link>
-              <button
-                type="button"
-                className="inline-flex items-center gap-1 rounded-lg border border-sand px-3 py-2 text-sm font-medium hover:bg-sand"
-                onClick={() => setShareOpen(true)}
-              >
-                <Share2 size={14} />
-                Share
-              </button>
-              <button
-                type="button"
-                className="inline-flex items-center gap-1 rounded-lg px-3 py-2 text-sm font-medium text-coral hover:bg-sand"
-                onClick={() => setPendingDelete(true)}
-              >
-                <Trash2 size={14} />
-                Delete
-              </button>
-            </div>
-          </div>
-          <div className="grid gap-3 sm:grid-cols-3">
-            <div className="rounded-xl bg-cream p-4 text-sm">
-              <p className="mb-1 flex items-center gap-2 font-medium">
-                <CalendarRange size={16} className="text-teal" />
-                Dates
-              </p>
+      <div className="gt-card overflow-hidden">
+        <div className="relative h-52 bg-navy md:h-80">
+          <CoverImage
+            src={tripCoverSrc(trip)}
+            fallbackSrc={tripCoverFallback(trip)}
+            alt=""
+            className="h-full w-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-navy via-navy/35 to-transparent" />
+          <div className="absolute inset-x-0 bottom-0 p-6 text-white md:p-8">
+            <p className="text-[0.7rem] font-semibold uppercase tracking-[0.16em] text-white/60">
+              Trip overview
+            </p>
+            <h1 className="mt-1 font-display text-3xl font-semibold tracking-tight md:text-4xl">
+              {trip.name}
+            </h1>
+            <p className="mt-2 text-sm text-white/80">
               {formatDateRange(trip.startDate, trip.endDate)}
-            </div>
-            <div className="rounded-xl bg-cream p-4 text-sm">
-              <p className="mb-1 flex items-center gap-2 font-medium">
-                <Wallet size={16} className="text-teal" />
+              {length ? ` · ${length}` : ""}
+              {trip.destinationCount
+                ? ` · ${trip.destinationCount} ${trip.destinationCount === 1 ? "destination" : "destinations"}`
+                : ""}
+            </p>
+            {trip.description ? (
+              <p className="mt-3 max-w-2xl text-sm text-white/75">{trip.description}</p>
+            ) : null}
+          </div>
+        </div>
+        <div className="space-y-5 p-5 md:p-7">
+          <Alert>{error}</Alert>
+          <div className="flex flex-wrap gap-2">
+            <Button variant="primary" to={`/trips/${trip.id}/edit`}>
+              <Pencil size={14} />
+              Edit trip
+            </Button>
+            <Button variant="secondary" onClick={() => setShareOpen(true)}>
+              <Share2 size={14} />
+              Share
+            </Button>
+            <Button variant="danger" onClick={() => setPendingDelete(true)}>
+              <Trash2 size={14} />
+              Delete
+            </Button>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            <StatCard
+              label="Dates"
+              value={formatDateRange(trip.startDate, trip.endDate)}
+              hint={length}
+              icon={CalendarRange}
+            />
+            <StatCard label="Budget" value={formatMoney(trip.budgetLimit, currency)} icon={Wallet} />
+            <StatCard
+              label="Spent"
+              value={formatCurrency(summary?.totalSpent ?? 0, currency)}
+              hint={`${formatCurrency(summary?.remaining ?? 0, currency)} remaining`}
+            />
+            <StatCard
+              label="Destinations"
+              value={`${trip.destinationCount} ${trip.destinationCount === 1 ? "city" : "cities"}`}
+              icon={MapPinned}
+            />
+            <StatCard
+              label="Activities"
+              value={`${activityCount} ${activityCount === 1 ? "activity" : "activities"}`}
+              icon={Sparkles}
+            />
+            <StatCard
+              label="Used"
+              value={`${summary?.percentageUsed ?? 0}%`}
+              hint={summary?.overBudget ? "Over budget" : "On track"}
+            />
+          </div>
+          <div>
+            <p className="gt-eyebrow mb-2">Quick actions</p>
+            <div className="flex flex-wrap gap-2">
+              <Button variant="secondary" size="sm" to={`/search/cities?tripId=${trip.id}`}>
+                Add destination
+              </Button>
+              <Button variant="secondary" size="sm" to={`/trips/${trip.id}/calendar`}>
+                Calendar
+              </Button>
+              <Button variant="secondary" size="sm" to={`/trips/${trip.id}/budget`}>
                 Budget
-              </p>
-              {formatMoney(trip.budgetLimit, trip.currency)}
-            </div>
-            <div className="rounded-xl bg-cream p-4 text-sm">
-              <p className="mb-1 flex items-center gap-2 font-medium">
-                <MapPinned size={16} className="text-teal" />
-                Destinations
-              </p>
-              {trip.destinationCount}{" "}
-              {trip.destinationCount === 1 ? "city" : "cities"}
+              </Button>
+              <Button variant="secondary" size="sm" to={`/trips/${trip.id}/map`}>
+                Map
+              </Button>
+              <Button variant="secondary" size="sm" to={`/trips/${trip.id}/assistant`}>
+                AI Assistant
+              </Button>
+              <Button variant="secondary" size="sm" to={`/trips/${trip.id}/share`}>
+                Share
+              </Button>
             </div>
           </div>
         </div>
@@ -162,15 +197,14 @@ export default function ItineraryViewPage() {
 
       {summary ? (
         <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold">Budget</h2>
-            <Link
-              to={`/trips/${trip.id}/budget`}
-              className="text-sm font-medium text-teal hover:text-teal-dark"
-            >
-              Manage expenses
-            </Link>
-          </div>
+          <SectionHeader
+            title="Budget summary"
+            action={
+              <Link className="text-sm font-semibold text-teal hover:text-teal-dark" to={`/trips/${trip.id}/budget`}>
+                Manage expenses
+              </Link>
+            }
+          />
           <BudgetSummary summary={summary} compact />
         </div>
       ) : null}
@@ -178,22 +212,19 @@ export default function ItineraryViewPage() {
       <CalendarPreview trip={trip} />
 
       {(trip.stops || []).length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-sand bg-white px-6 py-10 text-center">
-          <Luggage className="mx-auto mb-3 text-teal" size={32} />
-          <h2 className="text-lg font-semibold">Your journey starts here</h2>
-          <p className="mx-auto mt-1 max-w-lg text-sm text-muted">
-            Search for a city and add your first destination.
-          </p>
-          <Link
-            to={`/trips/${trip.id}/edit`}
-            className="mt-4 inline-flex rounded-lg bg-teal px-4 py-2 text-sm font-medium text-white hover:bg-teal-dark"
-          >
-            Open builder
-          </Link>
-        </div>
+        <EmptyState
+          icon={Compass}
+          title="No destinations"
+          description="Add your first destination to start building your itinerary."
+          action={
+            <Button variant="coral" to={`/search/cities?tripId=${trip.id}`}>
+              Add destination
+            </Button>
+          }
+        />
       ) : (
         <div className="space-y-3">
-          <h2 className="text-lg font-semibold">Itinerary</h2>
+          <SectionHeader title="Destinations" />
           {trip.stops.map((stop, index) => (
             <StopCard
               key={stop.id}

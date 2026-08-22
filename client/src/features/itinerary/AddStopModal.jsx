@@ -8,6 +8,7 @@ import { defaultStopDates } from "../../lib/dates.js";
 import { ApiError, explainApiError } from "../../lib/api.js";
 import { searchCities } from "../../lib/stopsApi.js";
 import { fieldError, validateStopDates } from "../../lib/validation.js";
+import useEscapeClose from "../../hooks/useEscapeClose.js";
 
 export default function AddStopModal({
   trip,
@@ -37,6 +38,7 @@ export default function AddStopModal({
   );
   const [errors, setErrors] = useState({});
   const debouncedQuery = useDebouncedValue(query, 400);
+  useEscapeClose(onClose, !submitting);
 
   useEffect(() => {
     if (debouncedQuery.trim().length < 2) {
@@ -59,7 +61,7 @@ export default function AddStopModal({
       })
       .catch((err) => {
         if (!cancelled) {
-          setSearchError(err.message || "Unable to search cities");
+          setSearchError(explainApiError(err, "Unable to search cities"));
         }
       })
       .finally(() => {
@@ -76,6 +78,9 @@ export default function AddStopModal({
 
   async function handleSubmit(event) {
     event.preventDefault();
+    if (submitting) {
+      return;
+    }
     const nextErrors = validateStopDates({
       startDate,
       endDate,
@@ -129,8 +134,8 @@ export default function AddStopModal({
   }
 
   return (
-    <div className="fixed inset-0 z-40 flex items-end justify-center bg-ink/40 p-0 sm:items-center sm:p-4">
-      <div className="max-h-[92vh] w-full max-w-lg overflow-y-auto rounded-t-2xl bg-white p-5 shadow-lg sm:rounded-2xl sm:p-6">
+    <div className="gt-modal-backdrop">
+      <div className="gt-modal max-w-lg">
         <div className="mb-4 flex items-start justify-between gap-3">
           <div>
             <h2 className="text-lg font-semibold">
@@ -138,7 +143,12 @@ export default function AddStopModal({
             </h2>
             <p className="text-sm text-muted">{trip.name}</p>
           </div>
-          <button type="button" className="rounded-lg p-1 hover:bg-sand" onClick={onClose}>
+          <button
+            type="button"
+            className="rounded-lg p-1 hover:bg-sand"
+            onClick={onClose}
+            aria-label="Close"
+          >
             <X size={18} />
           </button>
         </div>
@@ -191,6 +201,7 @@ export default function AddStopModal({
         {errors.city ? <p className="mb-3 text-sm text-coral">{errors.city}</p> : null}
 
         <form onSubmit={handleSubmit}>
+          <fieldset disabled={submitting} className="contents">
           <div className="grid gap-1 sm:grid-cols-2 sm:gap-x-3">
             <Field label="Start date" error={errors.startDate}>
               <input
@@ -258,7 +269,7 @@ export default function AddStopModal({
             </button>
             <button
               type="submit"
-              className="rounded-lg bg-teal px-3 py-2 text-sm font-medium text-white hover:bg-teal-dark disabled:opacity-60"
+              className="gt-btn gt-btn-primary"
               disabled={submitting}
             >
               {submitting
@@ -268,6 +279,7 @@ export default function AddStopModal({
                   : "Add destination"}
             </button>
           </div>
+          </fieldset>
         </form>
       </div>
     </div>

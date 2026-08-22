@@ -14,15 +14,15 @@ export default function CalendarPreview({ trip }) {
     : null;
 
   return (
-    <section className="rounded-2xl border border-sand bg-white p-4 shadow-sm md:p-5">
+    <section className="gt-card p-5 md:p-6">
       <div className="flex items-center justify-between gap-3">
-        <h2 className="flex items-center gap-2 text-lg font-semibold">
+        <h2 className="flex items-center gap-2 font-display text-xl font-semibold tracking-tight">
           <CalendarDays size={18} className="text-teal" />
-          Upcoming
+          Upcoming activities
         </h2>
         <Link
           to={`/trips/${trip.id}/calendar`}
-          className="text-sm font-medium text-teal hover:text-teal-dark"
+          className="text-sm font-semibold text-teal hover:text-teal-dark"
         >
           View calendar
         </Link>

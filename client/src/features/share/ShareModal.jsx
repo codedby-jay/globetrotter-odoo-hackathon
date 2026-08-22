@@ -1,15 +1,18 @@
 import { useState } from "react";
-import { Link } from "lucide-react";
+import { Link as LinkIcon } from "lucide-react";
 import { Field, inputClassName } from "../../components/TripForm.jsx";
 import { explainApiError } from "../../lib/api.js";
+import useEscapeClose from "../../hooks/useEscapeClose.js";
 import {
   publicTripUrl,
   recordShareEvent,
   updateTripVisibility,
 } from "../../lib/shareApi.js";
+import Button from "../../ui/Button.jsx";
+import Alert from "../../ui/Alert.jsx";
 
 const VISIBILITY_HELP = {
-  PRIVATE: "This trip is private.",
+  PRIVATE: "Only you can see this trip.",
   UNLISTED: "Anyone with the link can view this trip.",
   PUBLIC: "Anyone can view this trip.",
 };
@@ -21,9 +24,13 @@ export default function ShareModal({ trip, onClose, onSaved, embedded = false })
   const [notice, setNotice] = useState("");
   const [error, setError] = useState("");
   const url = publicTripUrl(trip.shareSlug);
+  useEscapeClose(embedded ? undefined : onClose, !saving && !embedded);
 
   async function saveVisibility(event) {
     event.preventDefault();
+    if (saving) {
+      return;
+    }
     setSaving(true);
     setError("");
     try {
@@ -69,8 +76,11 @@ export default function ShareModal({ trip, onClose, onSaved, embedded = false })
   const form = (
     <div className="space-y-4">
       <div>
-        <h2 className="text-lg font-semibold">Share your trip</h2>
-        <p className="text-sm text-muted">{trip.name}</p>
+        <p className="gt-eyebrow">Sharing</p>
+        <h2 id="share-trip-title" className="font-display text-2xl font-semibold tracking-tight">
+          Share your trip
+        </h2>
+        <p className="mt-1 text-sm text-muted">{trip.name}</p>
       </div>
       <form onSubmit={saveVisibility}>
         <Field label="Visibility">
@@ -86,51 +96,37 @@ export default function ShareModal({ trip, onClose, onSaved, embedded = false })
         </Field>
         <p className="mb-4 text-sm text-muted">{VISIBILITY_HELP[visibility]}</p>
         {visibility !== "PRIVATE" ? (
-          <Field label="Public URL">
+          <Field label="Share link">
             <input className={inputClassName} readOnly value={url} />
           </Field>
         ) : (
           <p className="mb-4 text-sm text-muted">
-            Public link: hidden until the trip is unlisted or public.
+            The public link stays hidden until the trip is unlisted or public.
           </p>
         )}
-        {error ? <p className="mb-3 text-sm text-coral">{error}</p> : null}
-        {notice ? <p className="mb-3 text-sm text-teal-dark">{notice}</p> : null}
+        <Alert className="mb-3">{error}</Alert>
+        <Alert tone="success" className="mb-3">
+          {notice}
+        </Alert>
         <div className="flex flex-wrap gap-2">
-          <button
-            type="submit"
-            className="rounded-lg bg-teal px-3 py-2 text-sm font-medium text-white hover:bg-teal-dark disabled:opacity-60"
-            disabled={saving}
-          >
+          <Button variant="primary" type="submit" disabled={saving} loading={saving}>
             {saving ? "Saving…" : "Save visibility"}
-          </button>
+          </Button>
           {visibility !== "PRIVATE" ? (
             <>
-              <button
-                type="button"
-                className="inline-flex items-center gap-1 rounded-lg border border-sand px-3 py-2 text-sm hover:bg-sand"
-                onClick={copyLink}
-              >
-                <Link size={14} />
+              <Button variant="secondary" type="button" onClick={copyLink}>
+                <LinkIcon size={14} />
                 {copied ? "Link copied!" : "Copy link"}
-              </button>
-              <button
-                type="button"
-                className="rounded-lg border border-sand px-3 py-2 text-sm hover:bg-sand"
-                onClick={nativeShare}
-              >
+              </Button>
+              <Button variant="secondary" type="button" onClick={nativeShare}>
                 Share
-              </button>
+              </Button>
             </>
           ) : null}
           {onClose ? (
-            <button
-              type="button"
-              className="rounded-lg px-3 py-2 text-sm hover:bg-sand"
-              onClick={onClose}
-            >
+            <Button variant="ghost" type="button" onClick={onClose}>
               Close
-            </button>
+            </Button>
           ) : null}
         </div>
       </form>
@@ -138,12 +134,17 @@ export default function ShareModal({ trip, onClose, onSaved, embedded = false })
   );
 
   if (embedded) {
-    return <div className="rounded-2xl border border-sand bg-white p-6 shadow-sm md:p-8">{form}</div>;
+    return <div className="gt-card p-6 md:p-8">{form}</div>;
   }
 
   return (
-    <div className="fixed inset-0 z-40 flex items-end justify-center bg-ink/40 p-0 sm:items-center sm:p-4">
-      <div className="max-h-[92vh] w-full max-w-lg overflow-y-auto rounded-t-2xl bg-white p-5 shadow-lg sm:rounded-2xl sm:p-6">
+    <div className="gt-modal-backdrop">
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="share-trip-title"
+        className="gt-modal max-w-lg"
+      >
         {form}
       </div>
     </div>

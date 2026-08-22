@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import AuthFormCard, {
   Field,
@@ -6,7 +6,7 @@ import AuthFormCard, {
   inputClassName,
 } from "../components/AuthFormCard.jsx";
 import { useAuth } from "../context/AuthContext.jsx";
-import { ApiError } from "../lib/api.js";
+import { ApiError, explainApiError } from "../lib/api.js";
 import { fieldError, validateLogin } from "../lib/validation.js";
 import { safeNextPath } from "../lib/navigation.js";
 
@@ -23,6 +23,25 @@ export default function LoginPage() {
   const [errors, setErrors] = useState({});
   const [formError, setFormError] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [apiDown, setApiDown] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/health")
+      .then((response) => {
+        if (!cancelled) {
+          setApiDown(!response.ok);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setApiDown(true);
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   function update(event) {
     setForm((current) => ({ ...current, [event.target.name]: event.target.value }));
@@ -30,6 +49,9 @@ export default function LoginPage() {
 
   async function handleSubmit(event) {
     event.preventDefault();
+    if (submitting) {
+      return;
+    }
     const nextErrors = validateLogin(form);
     setErrors(nextErrors);
     setFormError("");
@@ -51,7 +73,7 @@ export default function LoginPage() {
           password: fieldError(error.details, "password"),
         });
       }
-      setFormError(error.message || "Unable to log in");
+      setFormError(explainApiError(error, "Unable to log in"));
     } finally {
       setSubmitting(false);
     }
@@ -95,6 +117,12 @@ export default function LoginPage() {
             onChange={update}
           />
         </Field>
+        {apiDown ? (
+          <p className="mb-4 rounded-xl border border-coral/30 bg-[rgba(212,90,60,0.08)] px-3 py-2 text-sm text-coral">
+            The API is not running. In a second terminal run{" "}
+            <code className="font-semibold">cd server && npm run dev</code>, then try again.
+          </p>
+        ) : null}
         {formError ? <p className="mb-4 text-sm text-coral">{formError}</p> : null}
         <button className={buttonClassName} type="submit" disabled={submitting}>
           {submitting ? "Signing in…" : "Log in"}

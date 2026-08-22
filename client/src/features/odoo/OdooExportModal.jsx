@@ -7,11 +7,11 @@ export default function OdooExportModal({
   onClose,
 }) {
   return (
-    <div className="fixed inset-0 z-30 flex items-center justify-center bg-ink/40 p-4">
+    <div className="gt-modal-backdrop">
       <div
         role="dialog"
         aria-modal="true"
-        className="w-full max-w-md rounded-2xl bg-white p-6 shadow-lg"
+        className="gt-modal max-w-md"
       >
         <h2 className="text-lg font-semibold">Export trip to Odoo</h2>
         <p className="mt-2 text-sm text-muted">

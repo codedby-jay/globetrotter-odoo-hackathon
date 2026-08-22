@@ -46,14 +46,14 @@ export default function TripMap({ stops, skippedCount, selectedId, onSelect, tri
 
   if (!mounted) {
     return (
-      <div className="relative h-[420px] overflow-hidden rounded-2xl border border-sand bg-sand md:h-[560px]">
+      <div className="relative h-[420px] w-full max-w-full overflow-hidden rounded-2xl border border-sand bg-sand md:h-[560px]">
         <p className="p-4 text-sm text-muted">Loading map…</p>
       </div>
     );
   }
 
   return (
-    <div className="relative h-[420px] overflow-hidden rounded-2xl border border-sand bg-white shadow-sm md:h-[560px]">
+    <div className="relative h-[420px] w-full max-w-full overflow-hidden rounded-2xl border border-line bg-white shadow-sm md:h-[560px]">
       <MapContainer
         center={center}
         zoom={stops.length === 1 ? 10 : 4}

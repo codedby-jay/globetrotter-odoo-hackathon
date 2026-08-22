@@ -45,6 +45,14 @@ export function AuthProvider({ children }) {
     };
   }, []);
 
+  useEffect(() => {
+    function onExpired() {
+      setUser(null);
+    }
+    window.addEventListener("globetrotter:session-expired", onExpired);
+    return () => window.removeEventListener("globetrotter:session-expired", onExpired);
+  }, []);
+
   const value = useMemo(
     () => ({
       user,

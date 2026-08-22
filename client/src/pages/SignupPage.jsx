@@ -6,7 +6,7 @@ import AuthFormCard, {
   inputClassName,
 } from "../components/AuthFormCard.jsx";
 import { useAuth } from "../context/AuthContext.jsx";
-import { ApiError } from "../lib/api.js";
+import { ApiError, explainApiError } from "../lib/api.js";
 import { fieldError, validateSignup } from "../lib/validation.js";
 import { safeNextPath } from "../lib/navigation.js";
 
@@ -31,6 +31,9 @@ export default function SignupPage() {
 
   async function handleSubmit(event) {
     event.preventDefault();
+    if (submitting) {
+      return;
+    }
     const nextErrors = validateSignup(form);
     setErrors(nextErrors);
     setFormError("");
@@ -56,7 +59,7 @@ export default function SignupPage() {
           confirmPassword: fieldError(error.details, "confirmPassword"),
         });
       }
-      setFormError(error.message || "Unable to create account");
+      setFormError(explainApiError(error, "Unable to create account"));
     } finally {
       setSubmitting(false);
     }

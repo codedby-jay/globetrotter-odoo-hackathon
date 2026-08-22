@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
+import PageLoader from "../../components/PageLoader.jsx";
 import TripSubnav from "../../components/TripSubnav.jsx";
 import ShareModal from "../../features/share/ShareModal.jsx";
 import { explainApiError } from "../../lib/api.js";
@@ -35,7 +36,7 @@ export default function ShareTripPage() {
   }, [id]);
 
   if (loading) {
-    return <p className="text-sm text-muted">Loading sharing settings…</p>;
+    return <PageLoader label="Loading sharing settings…" />;
   }
 
   if (!trip) {

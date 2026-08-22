@@ -23,6 +23,9 @@ export default function ResetPasswordPage() {
 
   async function handleSubmit(event) {
     event.preventDefault();
+    if (submitting) {
+      return;
+    }
     const nextErrors = validateResetPassword(form);
     if (!token) {
       nextErrors.token = "Reset token is missing";
