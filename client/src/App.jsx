@@ -13,7 +13,7 @@ import CreateTripPage from "./pages/CreateTripPage.jsx";
 import ItineraryViewPage from "./pages/ItineraryViewPage.jsx";
 import ItineraryBuilderPage from "./pages/ItineraryBuilderPage.jsx";
 import BudgetPage from "./pages/BudgetPage.jsx";
-import CalendarPage from "./pages/CalendarPage.jsx";
+import TripCalendarPage from "./pages/TripCalendarPage.jsx";
 import CitySearchPage from "./pages/search/CitySearchPage.jsx";
 import ActivitySearchPage from "./pages/search/ActivitySearchPage.jsx";
 import PublicItineraryPage from "./pages/PublicItineraryPage.jsx";
@@ -112,7 +112,7 @@ export default function App() {
           path="/trips/:id/calendar"
           element={
             <Guarded>
-              <CalendarPage />
+              <TripCalendarPage />
             </Guarded>
           }
         />

@@ -11,6 +11,7 @@ import {
 import ConfirmDialog from "../components/ConfirmDialog.jsx";
 import TripSubnav from "../components/TripSubnav.jsx";
 import BudgetSummary from "../features/budget/BudgetSummary.jsx";
+import CalendarPreview from "../features/calendar/CalendarPreview.jsx";
 import StopCard from "../features/itinerary/StopCard.jsx";
 import { explainApiError } from "../lib/api.js";
 import { getBudgetSummary } from "../lib/expensesApi.js";
@@ -162,6 +163,8 @@ export default function ItineraryViewPage() {
           <BudgetSummary summary={summary} compact />
         </div>
       ) : null}
+
+      <CalendarPreview trip={trip} />
 
       {(trip.stops || []).length === 0 ? (
         <div className="rounded-2xl border border-dashed border-sand bg-white px-6 py-10 text-center">
