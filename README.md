@@ -1,4 +1,4 @@
-# Globe-Trotter
+# GlobeTrotter
 
 Personalized multi-city travel planning for the Odoo × LDCE Ahmedabad Hackathon 26.
 
