@@ -1,4 +1,4 @@
-import { Route, Routes } from "react-router-dom";
+import { Navigate, Route, Routes, useParams } from "react-router-dom";
 import GuestRoute from "./components/GuestRoute.jsx";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
 import AppShell from "./layouts/AppShell.jsx";
@@ -18,13 +18,18 @@ import CitySearchPage from "./pages/search/CitySearchPage.jsx";
 import ActivitySearchPage from "./pages/search/ActivitySearchPage.jsx";
 import PublicItineraryPage from "./pages/share/PublicItineraryPage.jsx";
 import ShareTripPage from "./pages/share/ShareTripPage.jsx";
-import TripAiPage from "./pages/trips/TripAiPage.jsx";
+import TripAssistantPage from "./pages/trips/TripAssistantPage.jsx";
 import TripOdooPage from "./pages/trips/TripOdooPage.jsx";
 import ProfilePage from "./pages/ProfilePage.jsx";
 import AdminPage from "./pages/AdminPage.jsx";
 
 function Guarded({ children }) {
   return <ProtectedRoute>{children}</ProtectedRoute>;
+}
+
+function RedirectLegacyAiPage() {
+  const { id } = useParams();
+  return <Navigate to={`/trips/${id}/assistant`} replace />;
 }
 
 export default function App() {
@@ -131,7 +136,15 @@ export default function App() {
           path="/trips/:id/ai"
           element={
             <Guarded>
-              <TripAiPage />
+              <RedirectLegacyAiPage />
+            </Guarded>
+          }
+        />
+        <Route
+          path="/trips/:id/assistant"
+          element={
+            <Guarded>
+              <TripAssistantPage />
             </Guarded>
           }
         />
