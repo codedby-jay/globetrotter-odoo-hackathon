@@ -1,8 +1,12 @@
 import { Route, Routes } from "react-router-dom";
+import GuestRoute from "./components/GuestRoute.jsx";
+import ProtectedRoute from "./components/ProtectedRoute.jsx";
 import AppShell from "./layouts/AppShell.jsx";
 import PlaceholderPage from "./pages/PlaceholderPage.jsx";
 import LoginPage from "./pages/LoginPage.jsx";
 import SignupPage from "./pages/SignupPage.jsx";
+import ForgotPasswordPage from "./pages/ForgotPasswordPage.jsx";
+import ResetPasswordPage from "./pages/ResetPasswordPage.jsx";
 import DashboardPage from "./pages/DashboardPage.jsx";
 import MyTripsPage from "./pages/MyTripsPage.jsx";
 import CreateTripPage from "./pages/CreateTripPage.jsx";
@@ -16,30 +20,141 @@ import PublicItineraryPage from "./pages/PublicItineraryPage.jsx";
 import ProfilePage from "./pages/ProfilePage.jsx";
 import AdminPage from "./pages/AdminPage.jsx";
 
+function Guarded({ children }) {
+  return <ProtectedRoute>{children}</ProtectedRoute>;
+}
+
 export default function App() {
   return (
     <Routes>
       <Route element={<AppShell />}>
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/signup" element={<SignupPage />} />
-        <Route path="/" element={<DashboardPage />} />
-        <Route path="/trips" element={<MyTripsPage />} />
-        <Route path="/trips/new" element={<CreateTripPage />} />
-        <Route path="/trips/:id" element={<ItineraryViewPage />} />
-        <Route path="/trips/:id/edit" element={<ItineraryBuilderPage />} />
-        <Route path="/trips/:id/budget" element={<BudgetPage />} />
-        <Route path="/trips/:id/calendar" element={<CalendarPage />} />
-        <Route path="/search/cities" element={<CitySearchPage />} />
-        <Route path="/search/activities" element={<ActivitySearchPage />} />
+        <Route
+          path="/login"
+          element={
+            <GuestRoute>
+              <LoginPage />
+            </GuestRoute>
+          }
+        />
+        <Route
+          path="/signup"
+          element={
+            <GuestRoute>
+              <SignupPage />
+            </GuestRoute>
+          }
+        />
+        <Route
+          path="/forgot-password"
+          element={
+            <GuestRoute>
+              <ForgotPasswordPage />
+            </GuestRoute>
+          }
+        />
+        <Route
+          path="/reset-password"
+          element={
+            <GuestRoute>
+              <ResetPasswordPage />
+            </GuestRoute>
+          }
+        />
+        <Route
+          path="/"
+          element={
+            <Guarded>
+              <DashboardPage />
+            </Guarded>
+          }
+        />
+        <Route
+          path="/trips"
+          element={
+            <Guarded>
+              <MyTripsPage />
+            </Guarded>
+          }
+        />
+        <Route
+          path="/trips/new"
+          element={
+            <Guarded>
+              <CreateTripPage />
+            </Guarded>
+          }
+        />
+        <Route
+          path="/trips/:id"
+          element={
+            <Guarded>
+              <ItineraryViewPage />
+            </Guarded>
+          }
+        />
+        <Route
+          path="/trips/:id/edit"
+          element={
+            <Guarded>
+              <ItineraryBuilderPage />
+            </Guarded>
+          }
+        />
+        <Route
+          path="/trips/:id/budget"
+          element={
+            <Guarded>
+              <BudgetPage />
+            </Guarded>
+          }
+        />
+        <Route
+          path="/trips/:id/calendar"
+          element={
+            <Guarded>
+              <CalendarPage />
+            </Guarded>
+          }
+        />
+        <Route
+          path="/search/cities"
+          element={
+            <Guarded>
+              <CitySearchPage />
+            </Guarded>
+          }
+        />
+        <Route
+          path="/search/activities"
+          element={
+            <Guarded>
+              <ActivitySearchPage />
+            </Guarded>
+          }
+        />
         <Route path="/p/:slug" element={<PublicItineraryPage />} />
-        <Route path="/profile" element={<ProfilePage />} />
-        <Route path="/admin" element={<AdminPage />} />
+        <Route
+          path="/profile"
+          element={
+            <Guarded>
+              <ProfilePage />
+            </Guarded>
+          }
+        />
+        <Route
+          path="/admin"
+          element={
+            <Guarded>
+              <AdminPage />
+            </Guarded>
+          }
+        />
         <Route
           path="*"
           element={
             <PlaceholderPage
               title="Page not found"
-              description="This route is not part of the GlobeTrotter foundation."
+              description="This route is not part of GlobeTrotter."
             />
           }
         />

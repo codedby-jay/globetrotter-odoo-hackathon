@@ -1,23 +1,18 @@
-import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useMemo, useState } from "react";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import AuthFormCard, {
   Field,
   buttonClassName,
   inputClassName,
 } from "../components/AuthFormCard.jsx";
-import { useAuth } from "../context/AuthContext.jsx";
-import { ApiError } from "../lib/api.js";
-import { fieldError, validateSignup } from "../lib/validation.js";
+import { apiRequest, ApiError } from "../lib/api.js";
+import { fieldError, validateResetPassword } from "../lib/validation.js";
 
-export default function SignupPage() {
-  const { signup } = useAuth();
+export default function ResetPasswordPage() {
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const [form, setForm] = useState({
-    name: "",
-    email: "",
-    password: "",
-    confirmPassword: "",
-  });
+  const token = useMemo(() => searchParams.get("token") || "", [searchParams]);
+  const [form, setForm] = useState({ password: "", confirmPassword: "" });
   const [errors, setErrors] = useState({});
   const [formError, setFormError] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -28,7 +23,10 @@ export default function SignupPage() {
 
   async function handleSubmit(event) {
     event.preventDefault();
-    const nextErrors = validateSignup(form);
+    const nextErrors = validateResetPassword(form);
+    if (!token) {
+      nextErrors.token = "Reset token is missing";
+    }
     setErrors(nextErrors);
     setFormError("");
     if (Object.keys(nextErrors).length > 0) {
@@ -37,23 +35,22 @@ export default function SignupPage() {
 
     setSubmitting(true);
     try {
-      await signup({
-        name: form.name.trim(),
-        email: form.email.trim(),
-        password: form.password,
-        confirmPassword: form.confirmPassword,
+      await apiRequest("/auth/reset-password", {
+        method: "POST",
+        body: {
+          token,
+          password: form.password,
+        },
       });
-      navigate("/", { replace: true });
+      navigate("/login", { replace: true });
     } catch (error) {
       if (error instanceof ApiError && error.details) {
         setErrors({
-          name: fieldError(error.details, "name"),
-          email: fieldError(error.details, "email"),
           password: fieldError(error.details, "password"),
-          confirmPassword: fieldError(error.details, "confirmPassword"),
+          token: fieldError(error.details, "token"),
         });
       }
-      setFormError(error.message || "Unable to create account");
+      setFormError(error.message || "Unable to reset password");
     } finally {
       setSubmitting(false);
     }
@@ -61,39 +58,18 @@ export default function SignupPage() {
 
   return (
     <AuthFormCard
-      title="Create an account"
-      description="Save trips and itineraries to your GlobeTrotter profile."
+      title="Reset password"
+      description="Choose a new password for your account."
       footer={
         <p>
-          Already have an account?{" "}
           <Link className="font-medium text-teal" to="/login">
-            Log in
+            Back to login
           </Link>
         </p>
       }
     >
       <form onSubmit={handleSubmit} noValidate>
-        <Field label="Name" error={errors.name}>
-          <input
-            className={inputClassName}
-            type="text"
-            name="name"
-            autoComplete="name"
-            value={form.name}
-            onChange={update}
-          />
-        </Field>
-        <Field label="Email" error={errors.email}>
-          <input
-            className={inputClassName}
-            type="email"
-            name="email"
-            autoComplete="email"
-            value={form.email}
-            onChange={update}
-          />
-        </Field>
-        <Field label="Password" error={errors.password}>
+        <Field label="New password" error={errors.password}>
           <input
             className={inputClassName}
             type="password"
@@ -113,9 +89,10 @@ export default function SignupPage() {
             onChange={update}
           />
         </Field>
+        {errors.token ? <p className="mb-4 text-sm text-coral">{errors.token}</p> : null}
         {formError ? <p className="mb-4 text-sm text-coral">{formError}</p> : null}
         <button className={buttonClassName} type="submit" disabled={submitting}>
-          {submitting ? "Creating account…" : "Sign up"}
+          {submitting ? "Updating…" : "Update password"}
         </button>
       </form>
     </AuthFormCard>

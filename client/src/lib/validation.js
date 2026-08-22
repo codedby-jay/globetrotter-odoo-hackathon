@@ -1,0 +1,77 @@
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+export function validateSignup({ name, email, password, confirmPassword }) {
+  const errors = {};
+  const trimmedName = name.trim();
+  const trimmedEmail = email.trim();
+
+  if (trimmedName.length < 2) {
+    errors.name = "Name must be at least 2 characters";
+  }
+
+  if (!trimmedEmail) {
+    errors.email = "Email is required";
+  } else if (!EMAIL_PATTERN.test(trimmedEmail)) {
+    errors.email = "Enter a valid email address";
+  }
+
+  if (password.length < 8) {
+    errors.password = "Password must be at least 8 characters";
+  } else if (password.toLowerCase() === trimmedEmail.toLowerCase()) {
+    errors.password = "Password cannot be the same as your email";
+  }
+
+  if (password !== confirmPassword) {
+    errors.confirmPassword = "Passwords do not match";
+  }
+
+  return errors;
+}
+
+export function validateLogin({ email, password }) {
+  const errors = {};
+  const trimmedEmail = email.trim();
+
+  if (!trimmedEmail) {
+    errors.email = "Email is required";
+  } else if (!EMAIL_PATTERN.test(trimmedEmail)) {
+    errors.email = "Enter a valid email address";
+  }
+
+  if (!password) {
+    errors.password = "Password is required";
+  }
+
+  return errors;
+}
+
+export function validateForgotPassword({ email }) {
+  const errors = {};
+  const trimmedEmail = email.trim();
+
+  if (!trimmedEmail) {
+    errors.email = "Email is required";
+  } else if (!EMAIL_PATTERN.test(trimmedEmail)) {
+    errors.email = "Enter a valid email address";
+  }
+
+  return errors;
+}
+
+export function validateResetPassword({ password, confirmPassword }) {
+  const errors = {};
+
+  if (password.length < 8) {
+    errors.password = "Password must be at least 8 characters";
+  }
+
+  if (password !== confirmPassword) {
+    errors.confirmPassword = "Passwords do not match";
+  }
+
+  return errors;
+}
+
+export function fieldError(details, field) {
+  return details?.find((item) => item.field === field)?.message;
+}

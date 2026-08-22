@@ -2,7 +2,7 @@
 
 Personalized multi-city travel planning for the Odoo × LDCE Ahmedabad Hackathon 26.
 
-This repository contains the project foundation plus the PostgreSQL / Prisma travel graph. Authentication and product APIs are not implemented yet.
+This repository contains the project foundation, PostgreSQL / Prisma travel graph, and JWT authentication. Trip planning APIs are not implemented yet.
 
 ## Stack
 
@@ -46,7 +46,9 @@ npx prisma migrate dev
 npx prisma db seed
 ```
 
-Demo account (for later auth work): `demo@globetrotter.dev` / `GlobetrotterDemo1`
+Demo account: `demo@globetrotter.dev` / `GlobetrotterDemo1`
+
+Auth endpoints live under `/api/v1/auth` (`signup`, `login`, `me`, `logout`, `forgot-password`, `reset-password`). Forgotten-password emails are not sent; the reset URL is printed in the backend console.
 
 ## Start the backend
 
