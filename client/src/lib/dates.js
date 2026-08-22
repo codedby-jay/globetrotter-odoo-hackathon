@@ -49,6 +49,64 @@ export function isUpcomingTrip(trip, today = new Date()) {
   return end >= startOfToday;
 }
 
+export function todayDate(now = new Date()) {
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const day = String(now.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+export function datesInRange(startDate, endDate) {
+  if (!startDate || !endDate || endDate < startDate) {
+    return [];
+  }
+  const days = [];
+  let current = startDate;
+  while (current <= endDate) {
+    days.push(current);
+    current = addDays(current, 1);
+  }
+  return days;
+}
+
+export function clampDate(date, startDate, endDate) {
+  if (!date) {
+    return startDate;
+  }
+  if (startDate && date < startDate) {
+    return startDate;
+  }
+  if (endDate && date > endDate) {
+    return endDate;
+  }
+  return date;
+}
+
+export function formatWeekdayDate(value) {
+  if (!value) {
+    return "";
+  }
+  const date = new Date(`${value}T00:00:00`);
+  return date.toLocaleDateString(undefined, {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+}
+
+export function formatTimeDisplay(time) {
+  const minutes = timeToMinutes(time);
+  if (minutes == null) {
+    return "";
+  }
+  const hours = Math.floor(minutes / 60);
+  const mins = minutes % 60;
+  const suffix = hours >= 12 ? "PM" : "AM";
+  const hour12 = hours % 12 || 12;
+  return `${hour12}:${String(mins).padStart(2, "0")} ${suffix}`;
+}
+
 export function addDays(isoDate, days) {
   const date = new Date(`${isoDate}T00:00:00`);
   date.setDate(date.getDate() + days);

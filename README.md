@@ -2,7 +2,7 @@
 
 Personalized multi-city travel planning for the Odoo × LDCE Ahmedabad Hackathon 26.
 
-This repository contains the project foundation, PostgreSQL / Prisma travel graph, JWT authentication, Trip CRUD, live city search, itinerary stops, activities, and trip budget / expense tracking.
+This repository contains the project foundation, PostgreSQL / Prisma travel graph, JWT authentication, Trip CRUD, live city search, itinerary stops, activities, trip budget / expense tracking, and a trip calendar timeline.
 
 ## Stack
 
@@ -48,7 +48,7 @@ npx prisma db seed
 
 Demo account: `demo@globetrotter.dev` / `GlobetrotterDemo1`
 
-Auth endpoints live under `/api/v1/auth`. Trip CRUD lives under `/api/v1/trips`. City search is `GET /api/v1/search/cities`. Stops can be added at `POST /api/v1/trips/:id/stops`. Budget totals come from `TripExpense` only (`GET /api/v1/trips/:id/budget`); itinerary stay, transport, and activity costs are not auto-copied into expenses. Forgotten-password emails are not sent; the reset URL is printed in the backend console.
+Auth endpoints live under `/api/v1/auth`. Trip CRUD lives under `/api/v1/trips`. City search is `GET /api/v1/search/cities`. Stops can be added at `POST /api/v1/trips/:id/stops`. The trip calendar is derived from `GET /api/v1/trips/:id` (no extra itinerary tables). Budget totals come from `TripExpense` only (`GET /api/v1/trips/:id/budget`); itinerary stay, transport, and activity costs are not auto-copied into expenses. Forgotten-password emails are not sent; the reset URL is printed in the backend console.
 
 ## Start the backend
 
