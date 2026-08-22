@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
+import PageLoader from "../../components/PageLoader.jsx";
 import TripSubnav from "../../components/TripSubnav.jsx";
 import OdooExportModal from "../../features/odoo/OdooExportModal.jsx";
 import OdooStatusCard from "../../features/odoo/OdooStatusCard.jsx";
@@ -78,7 +79,7 @@ export default function TripOdooPage() {
   }
 
   if (loading) {
-    return <p className="text-sm text-muted">Loading Odoo integration…</p>;
+    return <PageLoader label="Loading Odoo integration…" />;
   }
 
   if (!trip) {
@@ -99,12 +100,12 @@ export default function TripOdooPage() {
         testing={testing}
         onTest={handleTest}
       />
-      <div className="rounded-2xl border border-sand bg-white p-6 shadow-sm">
+      <div className="gt-card p-6">
         <h2 className="text-lg font-semibold">Trip</h2>
         <p className="mt-1 text-muted">{trip.name}</p>
         <button
           type="button"
-          className="mt-4 rounded-lg bg-teal px-3 py-2 text-sm font-medium text-white hover:bg-teal-dark disabled:opacity-60"
+          className="gt-btn gt-btn-primary mt-4"
           onClick={() => {
             setExportResult(null);
             setExportError("");

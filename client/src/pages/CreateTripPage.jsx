@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import TripForm from "../components/TripForm.jsx";
-import { ApiError } from "../lib/api.js";
+import { ApiError, explainApiError } from "../lib/api.js";
 import { createTrip } from "../lib/tripsApi.js";
 import { fieldError, validateTrip } from "../lib/validation.js";
 
@@ -28,6 +28,9 @@ export default function CreateTripPage() {
 
   async function handleSubmit(event) {
     event.preventDefault();
+    if (submitting) {
+      return;
+    }
     const nextErrors = validateTrip(values);
     setErrors(nextErrors);
     setFormError("");
@@ -59,19 +62,17 @@ export default function CreateTripPage() {
           currency: fieldError(error.details, "currency"),
         });
       }
-      setFormError(error.message || "Unable to create trip");
+      setFormError(explainApiError(error, "Unable to create trip"));
     } finally {
       setSubmitting(false);
     }
   }
 
   return (
-    <section className="mx-auto max-w-3xl rounded-2xl border border-sand bg-white p-6 shadow-sm md:p-8">
-      <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-teal">
-        New trip
-      </p>
-      <h1 className="mb-2 text-2xl font-semibold md:text-3xl">Plan a trip</h1>
-      <p className="mb-6 text-sm text-muted">
+    <section className="mx-auto max-w-3xl gt-card p-6 md:p-8">
+      <p className="gt-eyebrow">New trip</p>
+      <h1 className="gt-title mt-2">Plan a trip</h1>
+      <p className="gt-lede mb-6 mt-2">
         Set the basics now. Cities and activities will be added in the itinerary
         builder next.
       </p>

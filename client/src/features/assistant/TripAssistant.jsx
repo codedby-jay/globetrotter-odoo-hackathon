@@ -113,13 +113,13 @@ export default function TripAssistant({ trip, mode }) {
 
   return (
     <div className="space-y-6">
-      <header className="space-y-2">
-        <p className="text-xs font-semibold uppercase tracking-wide text-teal">AI Trip Assistant</p>
-        <h1 className="text-2xl font-semibold md:text-3xl">{trip.name}</h1>
-        <p className="max-w-2xl text-sm text-muted">
-          Get smart insights about your itinerary, budget and schedule.
+      <header className="space-y-3">
+        <p className="gt-eyebrow">AI Trip Assistant</p>
+        <h1 className="gt-title">{trip.name}</h1>
+        <p className="gt-lede">
+          Insights on itinerary, budget, and schedule — without inventing records.
         </p>
-        <p className="inline-flex rounded-full bg-sand px-3 py-1 text-xs font-medium uppercase tracking-wide text-muted">
+        <p className="gt-chip bg-sand text-muted">
           {mode === "ai" ? "Optional AI available" : "Smart Analysis Mode"}
         </p>
       </header>
@@ -129,7 +129,7 @@ export default function TripAssistant({ trip, mode }) {
           <button
             key={item.id}
             type="button"
-            className="rounded-full bg-white px-3 py-1.5 text-sm font-medium shadow-sm hover:bg-sand disabled:opacity-60"
+            className="gt-btn gt-btn-secondary"
             disabled={busy}
             onClick={() => onQuick(item.id)}
           >
@@ -140,29 +140,29 @@ export default function TripAssistant({ trip, mode }) {
 
       {budget ? (
         <section className="space-y-3">
-          <h2 className="text-lg font-semibold">Trip Health</h2>
+          <h2 className="font-display text-xl font-semibold tracking-tight">Trip health</h2>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            <article className="rounded-2xl border border-sand bg-white p-4 shadow-sm">
-              <p className="text-xs font-semibold uppercase tracking-wide text-teal">Budget</p>
-              <p className="mt-2 text-lg font-semibold">
+            <article className="gt-card p-4">
+              <p className="gt-eyebrow">Budget</p>
+              <p className="mt-2 font-display text-lg font-semibold">
                 {formatCurrency(budget.spent, currency)} / {formatCurrency(budget.limit, currency)}
               </p>
-              <div className="mt-3 h-2 overflow-hidden rounded-full bg-sand">
-                <div className="h-full bg-teal" style={{ width: `${used}%` }} />
+              <div className="gt-progress mt-3">
+                <span style={{ width: `${used}%` }} />
               </div>
               <p className="mt-2 text-sm text-muted">{budget.percentage}% used</p>
             </article>
-            <article className="rounded-2xl border border-sand bg-white p-4 shadow-sm">
-              <p className="text-xs font-semibold uppercase tracking-wide text-teal">Itinerary</p>
-              <p className="mt-2 text-lg font-semibold">{health?.activities ?? 0} activities</p>
+            <article className="gt-card p-4">
+              <p className="gt-eyebrow">Itinerary</p>
+              <p className="mt-2 font-display text-lg font-semibold">{health?.activities ?? 0} activities</p>
             </article>
-            <article className="rounded-2xl border border-sand bg-white p-4 shadow-sm">
-              <p className="text-xs font-semibold uppercase tracking-wide text-teal">Destinations</p>
-              <p className="mt-2 text-lg font-semibold">{health?.destinations ?? 0}</p>
+            <article className="gt-card p-4">
+              <p className="gt-eyebrow">Destinations</p>
+              <p className="mt-2 font-display text-lg font-semibold">{health?.destinations ?? 0}</p>
             </article>
-            <article className="rounded-2xl border border-sand bg-white p-4 shadow-sm">
-              <p className="text-xs font-semibold uppercase tracking-wide text-teal">Warnings</p>
-              <p className="mt-2 text-lg font-semibold">{health?.warnings ?? 0}</p>
+            <article className="gt-card p-4">
+              <p className="gt-eyebrow">Warnings</p>
+              <p className="mt-2 font-display text-lg font-semibold">{health?.warnings ?? 0}</p>
             </article>
           </div>
         </section>
@@ -189,8 +189,8 @@ export default function TripAssistant({ trip, mode }) {
         </section>
       ) : null}
 
-      <section className="space-y-3 rounded-2xl border border-sand bg-white p-6 shadow-sm">
-        <h2 className="text-lg font-semibold">Ask about your trip</h2>
+      <section className="gt-card space-y-3 p-6">
+        <h2 className="font-display text-xl font-semibold tracking-tight">Ask about your trip</h2>
         <div className="space-y-3">
           {messages.map((item, index) => (
             <AssistantMessage
@@ -208,8 +208,12 @@ export default function TripAssistant({ trip, mode }) {
             sendMessage(draft);
           }}
         >
+          <label className="sr-only" htmlFor="assistant-message">
+            Ask about your trip
+          </label>
           <input
-            className="w-full rounded-lg border border-sand px-3 py-2 text-sm outline-none ring-teal focus:ring-2"
+            id="assistant-message"
+            className="gt-input min-w-0 w-full"
             placeholder="I have remaining budget. What can I do?"
             value={draft}
             onChange={(event) => setDraft(event.target.value)}
@@ -217,11 +221,11 @@ export default function TripAssistant({ trip, mode }) {
           />
           <button
             type="submit"
-            className="inline-flex items-center justify-center gap-2 rounded-lg bg-teal px-4 py-2 text-sm font-medium text-white hover:bg-teal-dark disabled:opacity-60"
+            className="gt-btn gt-btn-primary"
             disabled={busy || !draft.trim()}
           >
-            <Send size={16} />
-            Send
+            <Send size={16} aria-hidden />
+            {busy ? "Sending…" : "Send"}
           </button>
         </form>
       </section>

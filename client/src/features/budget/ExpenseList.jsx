@@ -1,25 +1,35 @@
 import { Pencil, Trash2 } from "lucide-react";
+import EmptyState from "../../components/EmptyState.jsx";
 import { formatCurrency, formatDate } from "../../lib/dates.js";
 import { CATEGORY_META } from "./BudgetSummary.jsx";
+import Button from "../../ui/Button.jsx";
 
 export default function ExpenseList({
   expenses,
   currency,
+  onAdd,
   onEdit,
   onDelete,
-  emptyLabel = "No expenses yet. Add your first cost to start tracking this trip.",
+  emptyLabel = "Track flights, lodging, meals, and more against this trip’s budget.",
 }) {
   if (!expenses?.length) {
     return (
-      <div className="rounded-2xl border border-dashed border-sand bg-white px-6 py-10 text-center">
-        <p className="font-medium">No expenses yet</p>
-        <p className="mt-1 text-sm text-muted">{emptyLabel}</p>
-      </div>
+      <EmptyState
+        title="No expenses recorded yet."
+        description={emptyLabel}
+        action={
+          onAdd ? (
+            <Button variant="coral" onClick={onAdd}>
+              Add expense
+            </Button>
+          ) : null
+        }
+      />
     );
   }
 
   return (
-    <div className="space-y-2">
+    <div className="gt-card divide-y divide-line overflow-hidden">
       {expenses.map((expense) => {
         const meta = CATEGORY_META[expense.category] || CATEGORY_META.OTHER;
         const Icon = meta.icon;
@@ -28,7 +38,7 @@ export default function ExpenseList({
         return (
           <article
             key={expense.id}
-            className="flex flex-col gap-3 rounded-2xl border border-sand bg-white p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between"
+            className="flex flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center sm:justify-between"
           >
             <div className="min-w-0">
               <p className="font-semibold">{description}</p>
@@ -42,25 +52,17 @@ export default function ExpenseList({
               </p>
             </div>
             <div className="flex flex-wrap items-center gap-2">
-              <p className="mr-2 font-semibold">
+              <p className="mr-2 font-display text-lg font-semibold">
                 {formatCurrency(expense.amount, expense.currency || currency)}
               </p>
-              <button
-                type="button"
-                className="inline-flex items-center gap-1 rounded-lg border border-sand px-3 py-1.5 text-sm hover:bg-sand"
-                onClick={() => onEdit?.(expense)}
-              >
+              <Button variant="secondary" size="sm" onClick={() => onEdit?.(expense)}>
                 <Pencil size={14} />
                 Edit
-              </button>
-              <button
-                type="button"
-                className="inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-sm text-coral hover:bg-sand"
-                onClick={() => onDelete?.(expense)}
-              >
+              </Button>
+              <Button variant="danger" size="sm" onClick={() => onDelete?.(expense)}>
                 <Trash2 size={14} />
                 Delete
-              </button>
+              </Button>
             </div>
           </article>
         );

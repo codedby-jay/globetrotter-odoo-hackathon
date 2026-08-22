@@ -31,6 +31,9 @@ export default function SignupPage() {
 
   async function handleSubmit(event) {
     event.preventDefault();
+    if (submitting) {
+      return;
+    }
     const nextErrors = validateSignup(form);
     setErrors(nextErrors);
     setFormError("");

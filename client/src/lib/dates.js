@@ -14,6 +14,18 @@ export function formatDateRange(startDate, endDate) {
   return `${formatDate(startDate)} – ${formatDate(endDate)}`;
 }
 
+export function tripDayCount(startDate, endDate) {
+  return datesInRange(startDate, endDate).length;
+}
+
+export function tripLengthLabel(startDate, endDate) {
+  const days = tripDayCount(startDate, endDate);
+  if (!days) {
+    return "";
+  }
+  return days === 1 ? "1 day" : `${days} days`;
+}
+
 export function formatCurrency(amount, currency = "USD") {
   const value = Number(amount);
   const safe = Number.isFinite(value) ? value : 0;

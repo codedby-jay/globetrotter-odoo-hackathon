@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { Plus, Wallet } from "lucide-react";
+import { Plus } from "lucide-react";
 import ConfirmDialog from "../components/ConfirmDialog.jsx";
+import PageLoader from "../components/PageLoader.jsx";
 import TripSubnav from "../components/TripSubnav.jsx";
 import AddExpenseModal from "../features/budget/AddExpenseModal.jsx";
 import BudgetSummary from "../features/budget/BudgetSummary.jsx";
@@ -77,6 +78,9 @@ export default function BudgetPage() {
   }, [id]);
 
   async function handleCreate(payload) {
+    if (saving) {
+      return;
+    }
     setSaving(true);
     setModalError("");
     try {
@@ -93,7 +97,7 @@ export default function BudgetPage() {
   }
 
   async function handleUpdate(payload) {
-    if (!editing) {
+    if (!editing || saving) {
       return;
     }
     setSaving(true);
@@ -130,7 +134,7 @@ export default function BudgetPage() {
   }
 
   if (loading) {
-    return <p className="text-sm text-muted">Loading budget…</p>;
+    return <PageLoader label="Loading budget…" />;
   }
 
   if (error && !trip) {
@@ -140,36 +144,33 @@ export default function BudgetPage() {
   return (
     <section className="space-y-6">
       <TripSubnav tripId={id} />
-      <div className="rounded-2xl border border-sand bg-white p-6 shadow-sm md:p-8">
-        <p className="text-xs font-semibold uppercase tracking-wide text-teal">Budget</p>
-        <h1 className="mt-1 flex items-center gap-2 text-2xl font-semibold md:text-3xl">
-          <Wallet size={26} className="text-teal" />
-          {trip?.name || "Trip budget"}
-        </h1>
-        <p className="mt-2 text-muted">
+      <div className="gt-card p-6 md:p-8">
+        <p className="gt-eyebrow">Budget</p>
+        <h1 className="gt-title mt-2">{trip?.name || "Trip budget"}</h1>
+        <p className="gt-lede mt-2">
           Track manual trip expenses. Itinerary stay, transport, and activity costs are
           not counted twice here.
         </p>
         <Link
           to={`/trips/${id}`}
-          className="mt-4 inline-block text-sm font-medium text-teal hover:text-teal-dark"
+          className="mt-4 inline-block text-sm font-semibold text-teal hover:text-teal-dark"
         >
           Back to trip
         </Link>
       </div>
 
       {notice ? (
-        <p className="rounded-xl bg-cream px-4 py-3 text-sm text-teal-dark">{notice}</p>
+        <p className="gt-alert gt-alert-success">{notice}</p>
       ) : null}
-      {error ? <p className="text-sm text-coral">{error}</p> : null}
+      {error ? <p className="gt-alert gt-alert-error">{error}</p> : null}
 
       <BudgetSummary summary={summary} />
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <h2 className="text-lg font-semibold">Expenses</h2>
+        <h2 className="font-display text-xl font-semibold tracking-tight">Expenses</h2>
         <button
           type="button"
-          className="inline-flex items-center justify-center gap-2 rounded-lg bg-coral px-4 py-2 text-sm font-medium text-white hover:opacity-90"
+          className="gt-btn gt-btn-coral"
           onClick={() => {
             setModalError("");
             setShowAdd(true);
@@ -183,6 +184,10 @@ export default function BudgetPage() {
       <ExpenseList
         expenses={expenses}
         currency={trip?.currency}
+        onAdd={() => {
+          setModalError("");
+          setShowAdd(true);
+        }}
         onEdit={(item) => {
           setModalError("");
           setEditing(item);

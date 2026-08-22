@@ -19,7 +19,7 @@ export default function OdooStatusCard({
   }
 
   return (
-    <div className="rounded-2xl border border-sand bg-white p-6 shadow-sm">
+    <div className="gt-card p-6">
       <p className="text-xs font-semibold uppercase tracking-wide text-teal">Odoo Integration</p>
       <h2 className="mt-1 text-lg font-semibold">Connection status</h2>
       {loading ? (
@@ -38,7 +38,7 @@ export default function OdooStatusCard({
       {error ? <p className="mt-2 text-sm text-coral">{error}</p> : null}
       <button
         type="button"
-        className="mt-4 rounded-lg bg-teal px-3 py-2 text-sm font-medium text-white hover:bg-teal-dark disabled:opacity-60"
+        className="gt-btn gt-btn-primary mt-4"
         onClick={onTest}
         disabled={loading || testing}
       >

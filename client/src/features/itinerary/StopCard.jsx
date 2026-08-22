@@ -1,7 +1,8 @@
 import { Link } from "react-router-dom";
 import { ArrowDown, ArrowUp, MapPin, Pencil, Plus, Sparkles, Trash2 } from "lucide-react";
 import ActivityCard from "../activities/ActivityCard.jsx";
-import { formatDateRange } from "../../lib/dates.js";
+import { formatDateRange, formatMoney, tripLengthLabel } from "../../lib/dates.js";
+import Button from "../../ui/Button.jsx";
 
 export default function StopCard({
   stop,
@@ -23,16 +24,20 @@ export default function StopCard({
 }) {
   const number = String(index + 1).padStart(2, "0");
   const activities = stop.activities || [];
+  const stay = formatMoney(stop.stayCost ?? 0, currency);
+  const transport = formatMoney(stop.transportCost ?? 0, currency);
 
   return (
-    <article className="rounded-2xl border border-sand bg-white p-4 shadow-sm md:p-5">
+    <article className="gt-card p-4 md:p-5">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-teal">
-            Destination
-          </p>
-          <p className="mt-1 text-xs font-semibold tracking-wide text-teal">{number}</p>
-          <h3 className="mt-1 flex items-center gap-2 text-lg font-semibold">
+        <div className="min-w-0">
+          <div className="flex items-center gap-2">
+            <span className="flex h-7 w-7 items-center justify-center rounded-full bg-teal text-xs font-bold text-white">
+              {number}
+            </span>
+            <p className="gt-eyebrow">Destination</p>
+          </div>
+          <h3 className="mt-2 flex items-center gap-2 font-display text-xl font-semibold tracking-tight">
             <MapPin size={18} className="text-teal" />
             {stop.city?.name || "Unknown city"}
           </h3>
@@ -42,54 +47,59 @@ export default function StopCard({
           </p>
           <p className="mt-2 text-sm">
             {formatDateRange(stop.startDate, stop.endDate)}
+            <span className="text-muted">
+              {" "}
+              · {tripLengthLabel(stop.startDate, stop.endDate)}
+            </span>
           </p>
+          <div className="mt-3 flex flex-wrap gap-3 text-sm text-muted">
+            <span>Stay {stay}</span>
+            <span>Transport {transport}</span>
+            <span>
+              {activities.length} {activities.length === 1 ? "activity" : "activities"}
+            </span>
+          </div>
         </div>
         {readOnly ? null : (
           <div className="flex flex-wrap gap-2">
-            <button
-              type="button"
-              className="inline-flex items-center gap-1 rounded-lg border border-sand px-3 py-1.5 text-sm hover:bg-sand disabled:opacity-40"
-              onClick={onMoveUp}
-              disabled={isFirst || reordering}
-            >
+            <Button variant="secondary" size="sm" onClick={onMoveUp} disabled={isFirst || reordering}>
               <ArrowUp size={14} />
               Up
-            </button>
-            <button
-              type="button"
-              className="inline-flex items-center gap-1 rounded-lg border border-sand px-3 py-1.5 text-sm hover:bg-sand disabled:opacity-40"
-              onClick={onMoveDown}
-              disabled={isLast || reordering}
-            >
+            </Button>
+            <Button variant="secondary" size="sm" onClick={onMoveDown} disabled={isLast || reordering}>
               <ArrowDown size={14} />
               Down
-            </button>
-            <button
-              type="button"
-              className="inline-flex items-center gap-1 rounded-lg border border-sand px-3 py-1.5 text-sm hover:bg-sand"
-              onClick={onEdit}
-            >
+            </Button>
+            <Button variant="secondary" size="sm" onClick={onEdit}>
               <Pencil size={14} />
               Edit
-            </button>
-            <button
-              type="button"
-              className="inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-sm text-coral hover:bg-sand"
-              onClick={onDelete}
-            >
+            </Button>
+            <Button variant="danger" size="sm" onClick={onDelete}>
               <Trash2 size={14} />
               Delete
-            </button>
+            </Button>
           </div>
         )}
       </div>
 
-      <div className="mt-5 border-t border-sand pt-4">
+      <div className="mt-5 border-t border-line pt-4">
         <h4 className="mb-3 text-sm font-semibold">Activities</h4>
         {activities.length === 0 ? (
-          <div className="rounded-xl border border-dashed border-sand px-4 py-6 text-center">
+          <div className="rounded-xl border border-dashed border-line px-4 py-8 text-center">
             <Sparkles className="mx-auto mb-2 text-teal" size={20} />
-            <p className="text-sm text-muted">No activities yet for this destination.</p>
+            <p className="font-medium">Your itinerary is waiting for something exciting.</p>
+            <p className="mt-1 text-sm text-muted">No activities planned yet.</p>
+            {readOnly ? null : (
+              <Button
+                variant="coral"
+                size="sm"
+                className="mt-4"
+                to={`/search/activities?tripId=${tripId}&stopId=${stop.id}`}
+              >
+                <Plus size={16} />
+                Add activity
+              </Button>
+            )}
           </div>
         ) : (
           <div className="space-y-2">
@@ -110,13 +120,13 @@ export default function StopCard({
             ))}
           </div>
         )}
-        {readOnly ? null : (
+        {readOnly || activities.length === 0 ? null : (
           <Link
             to={`/search/activities?tripId=${tripId}&stopId=${stop.id}`}
-            className="mt-4 inline-flex items-center gap-2 rounded-lg bg-coral px-4 py-2 text-sm font-medium text-white hover:opacity-90"
+            className="gt-btn gt-btn-coral mt-4"
           >
             <Plus size={16} />
-            Add Activity
+            Add activity
           </Link>
         )}
       </div>

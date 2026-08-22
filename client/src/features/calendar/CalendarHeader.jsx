@@ -1,5 +1,6 @@
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { formatDateRange } from "../../lib/dates.js";
+import { formatDate, formatDateRange } from "../../lib/dates.js";
+import Button from "../../ui/Button.jsx";
 
 export default function CalendarHeader({
   trip,
@@ -14,66 +15,51 @@ export default function CalendarHeader({
   todayInRange,
 }) {
   return (
-    <div className="rounded-2xl border border-sand bg-white p-6 shadow-sm md:p-8">
-      <p className="text-xs font-semibold uppercase tracking-wide text-teal">Calendar</p>
-      <h1 className="mt-1 text-2xl font-semibold md:text-3xl">{trip.name}</h1>
-      <p className="mt-2 text-muted">{formatDateRange(trip.startDate, trip.endDate)}</p>
+    <div className="gt-card p-6 md:p-8">
+      <p className="gt-eyebrow">Calendar</p>
+      <h1 className="gt-title mt-2">{trip.name}</h1>
+      <p className="gt-lede mt-2">{formatDateRange(trip.startDate, trip.endDate)}</p>
 
       <div className="mt-6 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-        <div className="flex flex-wrap gap-2">
+        <div className="flex gap-1 rounded-xl bg-sand p-1">
           <button
             type="button"
-            className={`rounded-full px-3 py-1.5 text-sm font-medium ${
-              view === "day" ? "bg-teal text-white" : "bg-cream text-muted hover:bg-sand"
+            className={`rounded-lg px-3 py-1.5 text-sm font-semibold ${
+              view === "day" ? "bg-white text-ink shadow-sm" : "text-muted hover:text-ink"
             }`}
             onClick={() => onViewChange("day")}
           >
-            Day View
+            Day
           </button>
           <button
             type="button"
-            className={`rounded-full px-3 py-1.5 text-sm font-medium ${
-              view === "all" ? "bg-teal text-white" : "bg-cream text-muted hover:bg-sand"
+            className={`rounded-lg px-3 py-1.5 text-sm font-semibold ${
+              view === "all" ? "bg-white text-ink shadow-sm" : "text-muted hover:text-ink"
             }`}
             onClick={() => onViewChange("all")}
           >
-            All Days
+            All days
           </button>
         </div>
 
         {view === "day" ? (
           <div className="flex flex-wrap items-center gap-2">
-            <button
-              type="button"
-              className="inline-flex items-center gap-1 rounded-lg border border-sand px-3 py-1.5 text-sm hover:bg-sand disabled:opacity-40"
-              onClick={onPrev}
-              disabled={!canPrev}
-            >
+            <Button variant="secondary" size="sm" onClick={onPrev} disabled={!canPrev}>
               <ChevronLeft size={16} />
               Previous
-            </button>
-            <button
-              type="button"
-              className="rounded-lg bg-cream px-3 py-1.5 text-sm font-medium hover:bg-sand disabled:opacity-40"
-              onClick={onToday}
-              disabled={!todayInRange}
-            >
+            </Button>
+            <Button variant="secondary" size="sm" onClick={onToday} disabled={!todayInRange}>
               Today
-            </button>
-            <button
-              type="button"
-              className="inline-flex items-center gap-1 rounded-lg border border-sand px-3 py-1.5 text-sm hover:bg-sand disabled:opacity-40"
-              onClick={onNext}
-              disabled={!canNext}
-            >
+            </Button>
+            <Button variant="secondary" size="sm" onClick={onNext} disabled={!canNext}>
               Next
               <ChevronRight size={16} />
-            </button>
+            </Button>
           </div>
         ) : null}
       </div>
       {view === "day" ? (
-        <p className="mt-3 text-sm text-muted">Showing {selectedDate}</p>
+        <p className="mt-3 text-sm text-muted">Showing {formatDate(selectedDate)}</p>
       ) : null}
     </div>
   );

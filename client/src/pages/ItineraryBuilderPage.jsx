@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation, useParams } from "react-router-dom";
-import { MapPinned, Plus } from "lucide-react";
+import { Plus } from "lucide-react";
 import ConfirmDialog from "../components/ConfirmDialog.jsx";
+import EmptyState from "../components/EmptyState.jsx";
+import PageLoader from "../components/PageLoader.jsx";
 import TripForm from "../components/TripForm.jsx";
 import TripSubnav from "../components/TripSubnav.jsx";
 import AddActivityModal from "../features/activities/AddActivityModal.jsx";
@@ -88,7 +90,7 @@ export default function ItineraryBuilderPage() {
         }
       } catch (err) {
         if (!cancelled) {
-          setFormError(err.message || "Unable to load trip");
+          setFormError(explainApiError(err, "Unable to load trip"));
         }
       } finally {
         if (!cancelled) {
@@ -108,6 +110,9 @@ export default function ItineraryBuilderPage() {
 
   async function handleSubmit(event) {
     event.preventDefault();
+    if (submitting) {
+      return;
+    }
     const nextErrors = validateTrip(values);
     setErrors(nextErrors);
     setFormError("");
@@ -140,13 +145,16 @@ export default function ItineraryBuilderPage() {
           currency: fieldError(error.details, "currency"),
         });
       }
-      setFormError(error.message || "Unable to update trip");
+      setFormError(explainApiError(error, "Unable to update trip"));
     } finally {
       setSubmitting(false);
     }
   }
 
   async function handleStopSubmit(payload) {
+    if (savingStop) {
+      return;
+    }
     setSavingStop(true);
     setModalError("");
     try {
@@ -162,7 +170,7 @@ export default function ItineraryBuilderPage() {
       setModal(null);
       await loadTrip();
     } catch (err) {
-      setModalError(err.message || "Unable to save destination");
+      setModalError(explainApiError(err, "Unable to save destination"));
       throw err;
     } finally {
       setSavingStop(false);
@@ -180,7 +188,7 @@ export default function ItineraryBuilderPage() {
       setPendingDelete(null);
       await loadTrip();
     } catch (err) {
-      setStopError(err.message || "Unable to remove destination");
+      setStopError(explainApiError(err, "Unable to remove destination"));
     } finally {
       setDeleting(false);
     }
@@ -209,14 +217,14 @@ export default function ItineraryBuilderPage() {
       setTrip({ ...trip, stops: data.stops });
     } catch (err) {
       setTrip({ ...trip, stops: previous });
-      setStopError(err.message || "Unable to reorder destinations");
+      setStopError(explainApiError(err, "Unable to reorder destinations"));
     } finally {
       setReordering(false);
     }
   }
 
   async function handleActivitySubmit(payload) {
-    if (!activityModal?.item) {
+    if (!activityModal?.item || savingActivity) {
       return;
     }
     setSavingActivity(true);
@@ -290,7 +298,7 @@ export default function ItineraryBuilderPage() {
   }
 
   if (loading) {
-    return <p className="text-sm text-muted">Loading trip…</p>;
+    return <PageLoader label="Loading itinerary builder…" />;
   }
 
   if (!values || !trip) {
@@ -304,27 +312,25 @@ export default function ItineraryBuilderPage() {
     <div className="space-y-6">
       <TripSubnav tripId={id} />
 
-      <section className="rounded-2xl border border-sand bg-white p-6 shadow-sm md:p-8">
-        <p className="text-xs font-semibold uppercase tracking-wide text-teal">
-          Itinerary builder
-        </p>
-        <h1 className="mt-1 text-2xl font-semibold md:text-3xl">{trip.name}</h1>
-        <p className="mt-2 text-muted">
+      <section className="gt-card p-6 md:p-8">
+        <p className="gt-eyebrow">Itinerary builder</p>
+        <h1 className="gt-title mt-2">{trip.name}</h1>
+        <p className="gt-lede mt-2">
           {formatDateRange(trip.startDate, trip.endDate)} ·{" "}
           {formatMoney(trip.budgetLimit, trip.currency)}
         </p>
         <Link
           to={`/trips/${id}`}
-          className="mt-4 inline-block text-sm font-medium text-teal hover:text-teal-dark"
+          className="mt-4 inline-block text-sm font-semibold text-teal hover:text-teal-dark"
         >
           View trip
         </Link>
       </section>
 
-      <section className="rounded-2xl border border-sand bg-white p-6 shadow-sm md:p-8">
-        <h2 className="mb-4 text-lg font-semibold">Trip details</h2>
+      <section className="gt-card p-6 md:p-8">
+        <h2 className="mb-4 font-display text-xl font-semibold tracking-tight">Trip details</h2>
         {saved ? (
-          <p className="mb-4 text-sm text-teal-dark">Trip details saved.</p>
+          <p className="gt-alert gt-alert-success mb-4">Saved successfully</p>
         ) : null}
         <TripForm
           initialValues={{ values, errors, onChange }}
@@ -337,17 +343,17 @@ export default function ItineraryBuilderPage() {
 
       <section className="space-y-4">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <h2 className="text-lg font-semibold">Your itinerary</h2>
+          <h2 className="font-display text-xl font-semibold tracking-tight">Your itinerary</h2>
           <Link
             to={`/search/cities?tripId=${id}`}
-            className="inline-flex items-center justify-center gap-2 rounded-lg bg-coral px-4 py-2 text-sm font-medium text-white hover:opacity-90"
+            className="gt-btn gt-btn-coral"
           >
             <Plus size={16} />
             Add destination
           </Link>
         </div>
         {addedNotice ? (
-          <p className="rounded-xl bg-cream px-4 py-3 text-sm text-teal-dark">
+          <p className="gt-alert gt-alert-success">
             {addedNotice}{" "}
             <Link className="font-medium text-teal" to={`/search/cities?tripId=${id}`}>
               Add another destination
@@ -356,19 +362,15 @@ export default function ItineraryBuilderPage() {
         ) : null}
         {stopError ? <p className="text-sm text-coral">{stopError}</p> : null}
         {stops.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-sand bg-white px-6 py-12 text-center">
-            <MapPinned className="mx-auto mb-3 text-teal" size={32} />
-            <h3 className="text-lg font-semibold">Your journey starts here</h3>
-            <p className="mt-1 text-sm text-muted">
-              Search for a city and add your first destination.
-            </p>
-            <Link
-              to={`/search/cities?tripId=${id}`}
-              className="mt-4 inline-flex rounded-lg bg-coral px-4 py-2 text-sm font-medium text-white hover:opacity-90"
-            >
-              + Add destination
-            </Link>
-          </div>
+          <EmptyState
+            title="No destinations added yet."
+            description="Search for a city and add your first destination."
+            action={
+              <Link to={`/search/cities?tripId=${id}`} className="gt-btn gt-btn-coral">
+                Add destination
+              </Link>
+            }
+          />
         ) : (
           <div className="space-y-3">
             {stops.map((stop, index) => (

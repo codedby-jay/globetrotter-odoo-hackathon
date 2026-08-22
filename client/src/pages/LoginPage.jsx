@@ -30,6 +30,9 @@ export default function LoginPage() {
 
   async function handleSubmit(event) {
     event.preventDefault();
+    if (submitting) {
+      return;
+    }
     const nextErrors = validateLogin(form);
     setErrors(nextErrors);
     setFormError("");

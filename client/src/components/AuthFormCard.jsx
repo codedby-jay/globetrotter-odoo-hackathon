@@ -1,10 +1,15 @@
 export default function AuthFormCard({ title, description, children, footer }) {
   return (
-    <section className="mx-auto w-full max-w-md rounded-2xl border border-sand bg-white p-6 shadow-sm md:p-8">
-      <h1 className="mb-2 text-2xl font-semibold">{title}</h1>
-      {description ? <p className="mb-6 text-sm text-muted">{description}</p> : null}
-      {children}
-      {footer ? <div className="mt-6 text-sm text-muted">{footer}</div> : null}
+    <section className="mx-auto w-full max-w-md">
+      <div className="mb-8 text-center">
+        <p className="gt-eyebrow">GlobeTrotter</p>
+        <h1 className="gt-title mt-2">{title}</h1>
+        {description ? <p className="gt-lede mx-auto mt-3">{description}</p> : null}
+      </div>
+      <div className="gt-card p-6 md:p-8">
+        {children}
+        {footer ? <div className="mt-6 border-t border-line pt-5 text-sm text-muted">{footer}</div> : null}
+      </div>
     </section>
   );
 }
@@ -19,8 +24,6 @@ export function Field({ label, error, children }) {
   );
 }
 
-export const inputClassName =
-  "w-full rounded-lg border border-sand bg-cream px-3 py-2 text-sm text-ink outline-none focus:border-teal";
+export const inputClassName = "gt-input";
 
-export const buttonClassName =
-  "w-full rounded-lg bg-teal px-3 py-2.5 text-sm font-medium text-white hover:bg-teal-dark disabled:opacity-60";
+export const buttonClassName = "gt-btn gt-btn-primary gt-btn-lg w-full";

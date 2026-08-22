@@ -1,16 +1,13 @@
 import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
+import PageLoader from "./PageLoader.jsx";
 
 export default function ProtectedRoute({ children }) {
   const { user, loading } = useAuth();
   const location = useLocation();
 
   if (loading) {
-    return (
-      <p className="text-sm text-muted" role="status">
-        Checking your session…
-      </p>
-    );
+    return <PageLoader label="Checking your session…" />;
   }
 
   if (!user) {

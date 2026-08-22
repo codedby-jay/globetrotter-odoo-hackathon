@@ -6,7 +6,7 @@ export default function ScheduleConflict({ conflicts }) {
   }
 
   return (
-    <div className="rounded-xl border border-coral/30 bg-coral/5 px-4 py-3 text-sm">
+    <div className="rounded-xl border border-coral/25 bg-[rgba(212,90,60,0.06)] px-4 py-3 text-sm">
       <p className="flex items-center gap-2 font-medium text-coral">
         <TriangleAlert size={16} />
         Schedule conflict

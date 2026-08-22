@@ -21,21 +21,21 @@ export class ApiError extends Error {
   }
 }
 
-export function explainApiError(error, fallback = "Something went wrong") {
+export function explainApiError(error, fallback = "Something went wrong. Please try again.") {
   if (error instanceof TypeError) {
-    return "Network error. Check your connection and try again.";
+    return "Unable to connect to the server.";
   }
   if (!(error instanceof ApiError)) {
     return error?.message || fallback;
   }
   if (error.status === 401) {
-    return "Please log in to continue.";
+    return "Your session has expired. Please log in again.";
   }
   if (error.status === 403) {
-    return "You do not have access to this trip.";
+    return "You don't have permission to access this trip.";
   }
   if (error.status === 404) {
-    return error.message || "That trip could not be found.";
+    return "Trip not found.";
   }
   if (error.status === 400) {
     const detail = error.details?.find((item) => item.message)?.message;
@@ -44,11 +44,8 @@ export function explainApiError(error, fallback = "Something went wrong") {
     }
     return detail || error.message || "Check the dates and try again.";
   }
-  if (error.status === 502) {
-    return error.message || "The assistant is unavailable. Try again later.";
-  }
   if (error.status >= 500) {
-    return "The server is unavailable. Please try again shortly.";
+    return "Something went wrong. Please try again.";
   }
   return error.message || fallback;
 }
@@ -78,6 +75,10 @@ export async function apiRequest(path, { method = "GET", body, token } = {}) {
   const payload = isJson ? await response.json() : null;
 
   if (!response.ok) {
+    if (response.status === 401 && !path.startsWith("/auth/")) {
+      clearStoredToken();
+      window.dispatchEvent(new Event("globetrotter:session-expired"));
+    }
     throw new ApiError(payload?.error || "Request failed", {
       status: response.status,
       details: payload?.details,

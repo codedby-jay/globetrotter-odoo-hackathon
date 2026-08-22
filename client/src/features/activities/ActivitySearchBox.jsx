@@ -14,6 +14,7 @@ export default function ActivitySearchBox({ value, onChange, placeholder }) {
         value={value}
         onChange={(event) => onChange(event.target.value)}
         placeholder={placeholder || "Search activities..."}
+        aria-label={placeholder || "Search activities"}
       />
     </label>
   );

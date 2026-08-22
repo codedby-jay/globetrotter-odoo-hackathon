@@ -1,35 +1,304 @@
 @import "tailwindcss";
 
 @theme {
-  --color-cream: #f7f3ea;
-  --color-sand: #efe6d6;
-  --color-ink: #1f2a2e;
-  --color-muted: #5c6b70;
-  --color-teal: #0f6c6c;
-  --color-teal-dark: #0b5555;
-  --color-coral: #e07a5f;
+  --color-cream: #f3eee4;
+  --color-sand: #e7ddd0;
+  --color-line: #d9cfc0;
+  --color-ink: #15202b;
+  --color-muted: #5c6a73;
+  --color-teal: #0d5757;
+  --color-teal-dark: #093f3f;
+  --color-teal-soft: #e4efee;
+  --color-coral: #d45a3c;
+  --color-coral-dark: #b8472d;
+  --color-navy: #10212a;
+  --font-sans: "Outfit", "Segoe UI", system-ui, sans-serif;
+  --font-display: "Fraunces", "Georgia", serif;
 }
 
 html,
 body,
 #root {
   min-height: 100%;
+  max-width: 100%;
+  overflow-x: clip;
 }
 
 body {
   margin: 0;
   background-color: var(--color-cream);
+  background-image:
+    radial-gradient(ellipse 80% 50% at 0% -10%, rgba(13, 87, 87, 0.08), transparent 50%),
+    radial-gradient(ellipse 60% 40% at 100% 0%, rgba(212, 90, 60, 0.06), transparent 45%);
   color: var(--color-ink);
-  font-family:
-    "Segoe UI",
-    system-ui,
-    -apple-system,
-    sans-serif;
+  font-family: var(--font-sans);
+  line-height: 1.55;
+}
+
+.font-display {
+  font-family: var(--font-display);
+  letter-spacing: -0.025em;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-teal);
+  outline-offset: 2px;
+}
+
+.gt-eyebrow {
+  margin: 0;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-teal);
+}
+
+.gt-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(1.75rem, 3vw, 2.4rem);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+  color: var(--color-ink);
+}
+
+.gt-lede {
+  margin: 0;
+  max-width: 38rem;
+  color: var(--color-muted);
+  font-size: 0.98rem;
+}
+
+.gt-card {
+  background: #fffdf9;
+  border: 1px solid var(--color-line);
+  border-radius: 1.1rem;
+  box-shadow: 0 1px 2px rgba(21, 32, 43, 0.04), 0 10px 28px -18px rgba(21, 32, 43, 0.28);
+}
+
+.gt-card-hover {
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease,
+    border-color 0.18s ease;
+}
+
+.gt-card-hover:hover {
+  transform: translateY(-2px);
+  border-color: #cfc3b1;
+  box-shadow: 0 12px 32px -16px rgba(21, 32, 43, 0.35);
+}
+
+.gt-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  border-radius: 0.65rem;
+  border: 1px solid transparent;
+  padding: 0.55rem 0.95rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.2;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease,
+    transform 0.12s ease,
+    box-shadow 0.15s ease;
+}
+
+.gt-btn:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.gt-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.gt-btn-primary {
+  background: var(--color-teal);
+  color: #fff;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.12) inset;
+}
+
+.gt-btn-primary:hover:not(:disabled) {
+  background: var(--color-teal-dark);
+}
+
+.gt-btn-coral {
+  background: var(--color-coral);
+  color: #fff;
+}
+
+.gt-btn-coral:hover:not(:disabled) {
+  background: var(--color-coral-dark);
+}
+
+.gt-btn-secondary {
+  background: #fff;
+  color: var(--color-ink);
+  border-color: var(--color-line);
+}
+
+.gt-btn-secondary:hover:not(:disabled) {
+  background: var(--color-cream);
+  border-color: #cfc3b1;
+}
+
+.gt-btn-ghost {
+  background: transparent;
+  color: var(--color-muted);
+}
+
+.gt-btn-ghost:hover:not(:disabled) {
+  background: var(--color-sand);
+  color: var(--color-ink);
+}
+
+.gt-btn-danger {
+  background: transparent;
+  color: var(--color-coral);
+}
+
+.gt-btn-danger:hover:not(:disabled) {
+  background: rgba(212, 90, 60, 0.08);
+}
+
+.gt-btn-sm {
+  padding: 0.38rem 0.7rem;
+  font-size: 0.78rem;
+}
+
+.gt-btn-lg {
+  padding: 0.72rem 1.15rem;
+}
+
+.gt-input {
+  width: 100%;
+  border-radius: 0.7rem;
+  border: 1px solid var(--color-line);
+  background: #fff;
+  padding: 0.62rem 0.8rem;
+  font-size: 0.9rem;
+  color: var(--color-ink);
+  outline: none;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.gt-input:focus {
+  border-color: var(--color-teal);
+  box-shadow: 0 0 0 3px rgba(13, 87, 87, 0.14);
+}
+
+.gt-alert {
+  border-radius: 0.85rem;
+  padding: 0.8rem 1rem;
+  font-size: 0.875rem;
+}
+
+.gt-alert-error {
+  background: rgba(212, 90, 60, 0.08);
+  color: #9a3a24;
+  border: 1px solid rgba(212, 90, 60, 0.22);
+}
+
+.gt-alert-success {
+  background: var(--color-teal-soft);
+  color: var(--color-teal-dark);
+  border: 1px solid rgba(13, 87, 87, 0.14);
+}
+
+.gt-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  border-radius: 999px;
+  padding: 0.28rem 0.7rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: var(--color-teal-soft);
+  color: var(--color-teal-dark);
+}
+
+.gt-progress {
+  height: 0.45rem;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--color-sand);
+}
+
+.gt-progress > span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--color-teal);
+}
+
+.gt-progress-over > span {
+  background: var(--color-coral);
+}
+
+.gt-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  background: rgba(16, 33, 42, 0.46);
+  padding: 0;
+}
+
+@media (min-width: 640px) {
+  .gt-modal-backdrop {
+    align-items: center;
+    padding: 1rem;
+  }
+}
+
+.gt-modal {
+  width: 100%;
+  max-height: 92vh;
+  overflow-y: auto;
+  border-radius: 1.2rem 1.2rem 0 0;
+  background: #fffdf9;
+  padding: 1.25rem;
+  box-shadow: 0 24px 60px -20px rgba(16, 33, 42, 0.45);
+}
+
+@media (min-width: 640px) {
+  .gt-modal {
+    border-radius: 1.1rem;
+    padding: 1.5rem;
+  }
 }
 
 .leaflet-container {
   font-family: inherit;
   background: var(--color-sand);
+  width: 100%;
+  max-width: 100%;
+  border-radius: inherit;
 }
 
 .gt-map-marker {
@@ -44,13 +313,13 @@ body {
   align-items: center;
   justify-content: center;
   border-radius: 9999px;
-  background: #0f6c6c;
+  background: #0d5757;
   color: #fff;
   font-size: 13px;
   font-weight: 700;
-  box-shadow: 0 2px 6px rgba(31, 42, 46, 0.25);
+  box-shadow: 0 2px 8px rgba(16, 33, 42, 0.28);
 }
 
 .gt-map-pin-active {
-  background: #e07a5f;
+  background: #d45a3c;
 }

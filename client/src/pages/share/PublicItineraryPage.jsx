@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { Copy, Globe, MapPin, Share2 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext.jsx";
+import PageLoader from "../../components/PageLoader.jsx";
 import { explainApiError } from "../../lib/api.js";
 import { buildCalendar } from "../../lib/calendar.js";
 import {
@@ -114,7 +115,7 @@ export default function PublicItineraryPage() {
   }
 
   if (loading) {
-    return <p className="text-sm text-muted">Loading itinerary...</p>;
+    return <PageLoader label="Loading itinerary…" />;
   }
 
   if (privateTrip) {
@@ -137,17 +138,19 @@ export default function PublicItineraryPage() {
 
   return (
     <article className="space-y-6">
-      <header className="overflow-hidden rounded-3xl border border-sand bg-white shadow-sm">
-        <div className="bg-gradient-to-br from-teal to-teal-dark px-6 py-10 text-white md:px-10">
-          <p className="text-sm font-medium tracking-wide text-white/80">🌍 GlobeTrotter</p>
-          <h1 className="mt-2 text-3xl font-semibold md:text-4xl">{trip.name}</h1>
-          <p className="mt-3 text-white/90">{formatDateRange(trip.startDate, trip.endDate)}</p>
+      <header className="gt-card overflow-hidden">
+        <div className="bg-navy px-6 py-10 text-white md:px-10">
+          <p className="text-[0.7rem] font-semibold uppercase tracking-[0.16em] text-white/55">
+            GlobeTrotter itinerary
+          </p>
+          <h1 className="mt-2 font-display text-3xl font-semibold tracking-tight md:text-5xl">{trip.name}</h1>
+          <p className="mt-3 text-white/80">{formatDateRange(trip.startDate, trip.endDate)}</p>
           {routeLabel ? <p className="mt-2 text-lg text-white/90">{routeLabel}</p> : null}
-          {trip.description ? <p className="mt-4 max-w-2xl text-white/80">{trip.description}</p> : null}
+          {trip.description ? <p className="mt-4 max-w-2xl text-white/70">{trip.description}</p> : null}
           <div className="mt-6 flex flex-wrap gap-2">
             <button
               type="button"
-              className="inline-flex items-center gap-2 rounded-lg bg-coral px-4 py-2 text-sm font-medium text-white hover:opacity-90 disabled:opacity-60"
+              className="gt-btn gt-btn-coral"
               onClick={handleCopy}
               disabled={copying}
             >
@@ -156,17 +159,14 @@ export default function PublicItineraryPage() {
             </button>
             <button
               type="button"
-              className="inline-flex items-center gap-2 rounded-lg bg-white/15 px-4 py-2 text-sm font-medium text-white hover:bg-white/25"
+              className="gt-btn border border-white/20 bg-white/10 text-white hover:bg-white/20"
               onClick={handleShare}
             >
               <Share2 size={16} />
               Share
             </button>
             {!user ? (
-              <Link
-                to={`/login?next=/p/${slug}`}
-                className="inline-flex items-center rounded-lg bg-white px-4 py-2 text-sm font-medium text-teal-dark"
-              >
+              <Link to={`/login?next=/p/${slug}`} className="gt-btn bg-white text-teal-dark">
                 Log in
               </Link>
             ) : null}
@@ -187,11 +187,11 @@ export default function PublicItineraryPage() {
 
       <div className="space-y-4">
         {(calendar?.days || []).map((day, index) => (
-          <section key={day.date} className="rounded-2xl border border-sand bg-white p-5 shadow-sm">
-            <p className="text-xs font-semibold uppercase tracking-wide text-teal">
+          <section key={day.date} className="gt-card p-5">
+            <p className="gt-eyebrow">
               Day {index + 1}
             </p>
-            <h2 className="mt-1 text-xl font-semibold">{formatWeekdayDate(day.date)}</h2>
+            <h2 className="mt-1 font-display text-xl font-semibold tracking-tight">{formatWeekdayDate(day.date)}</h2>
             {day.stops.length === 0 ? (
               <p className="mt-3 text-sm text-muted">No destination planned</p>
             ) : (

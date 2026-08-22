@@ -1,3 +1,6 @@
+import { useEffect } from "react";
+import Button from "../ui/Button.jsx";
+
 export default function ConfirmDialog({
   title,
   description,
@@ -7,32 +10,35 @@ export default function ConfirmDialog({
   onCancel,
   busy,
 }) {
+  useEffect(() => {
+    function onKey(event) {
+      if (event.key === "Escape" && !busy) {
+        onCancel?.();
+      }
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [busy, onCancel]);
+
   return (
-    <div className="fixed inset-0 z-30 flex items-center justify-center bg-ink/40 p-4">
+    <div className="gt-modal-backdrop">
       <div
         role="dialog"
         aria-modal="true"
-        className="w-full max-w-md rounded-2xl bg-white p-6 shadow-lg"
+        aria-labelledby="confirm-dialog-title"
+        className="gt-modal max-w-md"
       >
-        <h2 className="text-lg font-semibold">{title}</h2>
+        <h2 id="confirm-dialog-title" className="font-display text-xl font-semibold tracking-tight">
+          {title}
+        </h2>
         <p className="mt-2 text-sm text-muted">{description}</p>
-        <div className="mt-6 flex justify-end gap-2">
-          <button
-            type="button"
-            className="rounded-lg px-3 py-2 text-sm font-medium hover:bg-sand"
-            onClick={onCancel}
-            disabled={busy}
-          >
+        <div className="mt-6 flex flex-wrap justify-end gap-2">
+          <Button variant="secondary" onClick={onCancel} disabled={busy}>
             Cancel
-          </button>
-          <button
-            type="button"
-            className="rounded-lg bg-coral px-3 py-2 text-sm font-medium text-white hover:opacity-90 disabled:opacity-60"
-            onClick={onConfirm}
-            disabled={busy}
-          >
+          </Button>
+          <Button variant="coral" onClick={onConfirm} disabled={busy} loading={busy}>
             {busy ? busyLabel || "Deleting…" : confirmLabel}
-          </button>
+          </Button>
         </div>
       </div>
     </div>

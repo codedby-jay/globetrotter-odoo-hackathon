@@ -4,6 +4,7 @@ import { LoaderCircle, Sparkles } from "lucide-react";
 import ActivityResultCard from "../../features/activities/ActivityResultCard.jsx";
 import ActivitySearchBox from "../../features/activities/ActivitySearchBox.jsx";
 import AddActivityModal from "../../features/activities/AddActivityModal.jsx";
+import PageLoader from "../../components/PageLoader.jsx";
 import TripSubnav from "../../components/TripSubnav.jsx";
 import useDebouncedValue from "../../hooks/useDebouncedValue.js";
 import { explainApiError } from "../../lib/api.js";
@@ -21,6 +22,7 @@ export default function ActivitySearchPage() {
   const [searching, setSearching] = useState(false);
   const [error, setError] = useState("");
   const [trip, setTrip] = useState(null);
+  const [tripLoading, setTripLoading] = useState(Boolean(tripId));
   const [selected, setSelected] = useState(null);
   const [saving, setSaving] = useState(false);
   const [modalError, setModalError] = useState("");
@@ -32,9 +34,11 @@ export default function ActivitySearchPage() {
   useEffect(() => {
     if (!tripId) {
       setError("Open a destination from the itinerary builder to add activities.");
+      setTripLoading(false);
       return undefined;
     }
     let cancelled = false;
+    setTripLoading(true);
     getTrip(tripId)
       .then((data) => {
         if (!cancelled) {
@@ -46,6 +50,11 @@ export default function ActivitySearchPage() {
         if (!cancelled) {
           setTrip(null);
           setError(explainApiError(err, "Unable to load that trip"));
+        }
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setTripLoading(false);
         }
       });
     return () => {
@@ -86,6 +95,9 @@ export default function ActivitySearchPage() {
   }, [stop?.city?.id, debouncedQuery]);
 
   async function handleAdd(payload) {
+    if (saving) {
+      return;
+    }
     if (!stop) {
       setModalError("Open a destination first to add this activity.");
       return;
@@ -110,13 +122,10 @@ export default function ActivitySearchPage() {
   return (
     <section className="space-y-6">
       {tripId ? <TripSubnav tripId={tripId} /> : null}
-      <div className="rounded-2xl border border-sand bg-white p-6 shadow-sm md:p-8">
-        <p className="text-xs font-semibold uppercase tracking-wide text-teal">
-          Activity search
-        </p>
-        <h1 className="mt-1 text-2xl font-semibold md:text-3xl">
-          Plan what you will do
-        </h1>
+      {tripId && tripLoading ? <PageLoader label="Loading trip…" /> : null}
+      <div className="gt-card p-6 md:p-8">
+        <p className="gt-eyebrow">Activity search</p>
+        <h1 className="gt-title mt-2">Plan what you will do</h1>
         {stop ? (
           <p className="mt-2 text-muted">
             Add activities to {stop.city?.name} ({formatDateRange(stop.startDate, stop.endDate)})

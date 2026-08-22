@@ -1,10 +1,16 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight, Plus } from "lucide-react";
+import { ArrowRight, MapPinned, Plus } from "lucide-react";
 import { useAuth } from "../context/AuthContext.jsx";
 import TripCard from "../components/TripCard.jsx";
 import ConfirmDialog from "../components/ConfirmDialog.jsx";
+import { explainApiError } from "../lib/api.js";
 import { deleteTrip, listTrips } from "../lib/tripsApi.js";
+import EmptyState from "../components/EmptyState.jsx";
+import PageLoader from "../components/PageLoader.jsx";
+import Alert from "../ui/Alert.jsx";
+import Button from "../ui/Button.jsx";
+import SectionHeader from "../ui/SectionHeader.jsx";
 
 export default function DashboardPage() {
   const { user } = useAuth();
@@ -21,14 +27,36 @@ export default function DashboardPage() {
       const data = await listTrips();
       setTrips(data.trips);
     } catch (err) {
-      setError(err.message || "Unable to load trips");
+      setError(explainApiError(err, "Unable to load trips"));
     } finally {
       setLoading(false);
     }
   }
 
   useEffect(() => {
-    load();
+    let cancelled = false;
+    async function run() {
+      setLoading(true);
+      setError("");
+      try {
+        const data = await listTrips();
+        if (!cancelled) {
+          setTrips(data.trips);
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setError(explainApiError(err, "Unable to load trips"));
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
+    }
+    run();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const upcomingCount = trips.filter((trip) => {
@@ -37,6 +65,8 @@ export default function DashboardPage() {
     today.setHours(0, 0, 0, 0);
     return end >= today;
   }).length;
+
+  const destinationTotal = trips.reduce((sum, trip) => sum + (trip.destinationCount || 0), 0);
 
   const recentTrips = [...trips]
     .sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt))
@@ -52,65 +82,89 @@ export default function DashboardPage() {
       setPendingDelete(null);
       await load();
     } catch (err) {
-      setError(err.message || "Unable to delete trip");
+      setError(explainApiError(err, "Unable to delete trip"));
     } finally {
       setDeleting(false);
     }
   }
 
+  const firstName = user?.name?.split(" ")[0] || "traveler";
+
   return (
-    <section className="space-y-6">
-      <div className="rounded-2xl border border-sand bg-white p-6 shadow-sm md:flex md:items-center md:justify-between md:p-8">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-teal">
-            Dashboard
-          </p>
-          <h1 className="mt-1 text-2xl font-semibold md:text-3xl">
-            Welcome back, {user?.name?.split(" ")[0] || "traveler"}
-          </h1>
-          <p className="mt-2 text-muted">
-            {loading
-              ? "Loading your trips…"
-              : `You have ${upcomingCount} upcoming ${upcomingCount === 1 ? "trip" : "trips"}.`}
-          </p>
-        </div>
-        <Link
-          to="/trips/new"
-          className="mt-4 inline-flex items-center gap-2 rounded-lg bg-coral px-4 py-2.5 text-sm font-medium text-white hover:opacity-90 md:mt-0"
-        >
-          <Plus size={16} />
-          Plan new trip
-        </Link>
-      </div>
-
-      {error ? <p className="text-sm text-coral">{error}</p> : null}
-
-      <div>
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-lg font-semibold">Recent trips</h2>
-          <Link
-            to="/trips"
-            className="inline-flex items-center gap-1 text-sm font-medium text-teal hover:text-teal-dark"
-          >
-            View all
-            <ArrowRight size={14} />
-          </Link>
-        </div>
-        {loading ? <p className="text-sm text-muted">Loading trips…</p> : null}
-        {!loading && recentTrips.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-sand bg-white px-6 py-10 text-center">
-            <p className="font-medium">No trips yet</p>
-            <p className="mt-1 text-sm text-muted">
-              Create your first trip to see it here.
+    <section className="space-y-8">
+      <div className="overflow-hidden gt-card">
+        <div className="bg-navy px-6 py-8 text-white md:flex md:items-end md:justify-between md:px-8 md:py-10">
+          <div>
+            <p className="text-[0.7rem] font-semibold uppercase tracking-[0.16em] text-white/55">
+              Welcome back
+            </p>
+            <h1 className="mt-2 font-display text-3xl font-semibold tracking-tight md:text-4xl">
+              {firstName}, plan your next adventure.
+            </h1>
+            <p className="mt-3 max-w-xl text-sm text-white/70">
+              {loading
+                ? "Loading your trips…"
+                : upcomingCount
+                  ? `${upcomingCount} upcoming ${upcomingCount === 1 ? "trip" : "trips"} on the board.`
+                  : "Your next itinerary starts with a name, dates, and a destination."}
             </p>
           </div>
-        ) : (
-          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          <Button variant="coral" to="/trips/new" className="mt-5 md:mt-0">
+            <Plus size={16} />
+            Plan new trip
+          </Button>
+        </div>
+        <div className="grid gap-px bg-line sm:grid-cols-3">
+          <div className="bg-[#fffdf9] p-4">
+            <p className="gt-eyebrow">Trips</p>
+            <p className="mt-1 font-display text-2xl font-semibold">{loading ? "—" : trips.length}</p>
+          </div>
+          <div className="bg-[#fffdf9] p-4">
+            <p className="gt-eyebrow">Upcoming</p>
+            <p className="mt-1 font-display text-2xl font-semibold">{loading ? "—" : upcomingCount}</p>
+          </div>
+          <div className="bg-[#fffdf9] p-4">
+            <p className="gt-eyebrow">Destinations</p>
+            <p className="mt-1 font-display text-2xl font-semibold">{loading ? "—" : destinationTotal}</p>
+          </div>
+        </div>
+      </div>
+
+      <Alert>{error}</Alert>
+
+      <div>
+        <SectionHeader
+          title="Recent trips"
+          action={
+            <Link
+              to="/trips"
+              className="inline-flex items-center gap-1 text-sm font-semibold text-teal hover:text-teal-dark"
+            >
+              View all
+              <ArrowRight size={14} />
+            </Link>
+          }
+        />
+        {loading ? <PageLoader label="Loading trips…" /> : null}
+        {!loading && recentTrips.length === 0 ? (
+          <EmptyState
+            icon={MapPinned}
+            title="No trips yet"
+            description="Start planning your next adventure."
+            action={
+              <Button variant="coral" to="/trips/new">
+                Plan a trip
+              </Button>
+            }
+          />
+        ) : null}
+        {!loading && recentTrips.length > 0 ? (
+          <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
             {recentTrips.map((trip) => (
               <TripCard key={trip.id} trip={trip} onDelete={setPendingDelete} />
             ))}
           </div>
-        )}
+        ) : null}
       </div>
 
       {pendingDelete ? (

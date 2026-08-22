@@ -13,7 +13,8 @@ export default function CitySearchBox({ value, onChange, placeholder }) {
         type="search"
         value={value}
         onChange={(event) => onChange(event.target.value)}
-        placeholder={placeholder || "Search cities..."}
+        placeholder={placeholder || "Where do you want to go?"}
+        aria-label={placeholder || "Where do you want to go?"}
       />
     </label>
   );
