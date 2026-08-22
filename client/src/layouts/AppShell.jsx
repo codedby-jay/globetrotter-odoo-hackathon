@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext.jsx";
 import Button from "../ui/Button.jsx";
+import UserAvatar from "../components/UserAvatar.jsx";
 
 const navItems = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard },
@@ -49,7 +50,7 @@ export default function AppShell() {
           {user ? (
             <nav className="hidden items-center gap-0.5 md:flex" aria-label="Primary">
               {navItems.map(({ to, label, icon: Icon }) => (
-                <NavLink key={to} to={to} end={to === "/"} className={linkClass}>
+                <NavLink key={to} to={to} end className={linkClass}>
                   <Icon size={16} aria-hidden />
                   {label}
                 </NavLink>
@@ -63,12 +64,19 @@ export default function AppShell() {
                 <Button variant="coral" size="sm" to="/trips/new">
                   Plan trip
                 </Button>
-                <div className="flex items-center gap-2 rounded-full border border-line bg-cream px-2 py-1 pr-3">
-                  <span className="flex h-7 w-7 items-center justify-center rounded-full bg-teal text-xs font-semibold text-white">
-                    {(user.name || "T").slice(0, 1).toUpperCase()}
-                  </span>
-                  <span className="max-w-36 truncate text-sm font-medium">{user.name}</span>
-                </div>
+                <NavLink
+                  to="/profile"
+                  className={({ isActive }) =>
+                    [
+                      "flex items-center gap-2 rounded-full border px-2 py-1 pr-3 no-underline",
+                      isActive ? "border-teal bg-teal-soft" : "border-line bg-cream",
+                    ].join(" ")
+                  }
+                  aria-label="Open profile"
+                >
+                  <UserAvatar user={user} size="sm" />
+                  <span className="max-w-36 truncate text-sm font-medium text-ink">{user.name}</span>
+                </NavLink>
                 <Button variant="ghost" size="sm" onClick={() => logout()}>
                   Log out
                 </Button>
@@ -85,6 +93,17 @@ export default function AppShell() {
             )}
           </div>
 
+          <div className="flex items-center gap-2 md:contents">
+          {user ? (
+            <NavLink
+              to="/profile"
+              className="inline-flex shrink-0 md:hidden"
+              aria-label="Open profile"
+            >
+              <UserAvatar user={user} size="sm" />
+            </NavLink>
+          ) : null}
+
           <button
             type="button"
             className="inline-flex items-center justify-center rounded-lg p-2 text-muted hover:bg-sand md:hidden"
@@ -93,6 +112,7 @@ export default function AppShell() {
           >
             {menuOpen ? <X size={22} /> : <Menu size={22} />}
           </button>
+          </div>
         </div>
 
         {menuOpen ? (
@@ -102,7 +122,7 @@ export default function AppShell() {
                   <NavLink
                     key={to}
                     to={to}
-                    end={to === "/"}
+                    end
                     className={linkClass}
                     onClick={() => setMenuOpen(false)}
                   >

@@ -48,14 +48,18 @@ export default function TripCard({ trip, onDelete }) {
           <Button variant="primary" size="sm" to={`/trips/${trip.id}`}>
             View
           </Button>
-          <Button variant="secondary" size="sm" to={`/trips/${trip.id}/edit`}>
-            <Pencil size={13} />
-            Edit
-          </Button>
-          <Button variant="danger" size="sm" onClick={() => onDelete(trip)}>
-            <Trash2 size={13} />
-            Delete
-          </Button>
+          {onDelete ? (
+            <>
+              <Button variant="secondary" size="sm" to={`/trips/${trip.id}/edit`}>
+                <Pencil size={13} />
+                Edit
+              </Button>
+              <Button variant="danger" size="sm" onClick={() => onDelete(trip)}>
+                <Trash2 size={13} />
+                Delete
+              </Button>
+            </>
+          ) : null}
         </div>
       </div>
     </article>
