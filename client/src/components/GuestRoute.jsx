@@ -1,8 +1,11 @@
-import { Navigate } from "react-router-dom";
+import { Navigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
+import { safeNextPath } from "../lib/navigation.js";
 
 export default function GuestRoute({ children }) {
   const { user, loading } = useAuth();
+  const [searchParams] = useSearchParams();
+  const nextPath = safeNextPath(searchParams.get("next"), "/");
 
   if (loading) {
     return (
@@ -13,7 +16,7 @@ export default function GuestRoute({ children }) {
   }
 
   if (user) {
-    return <Navigate to="/" replace />;
+    return <Navigate to={nextPath} replace />;
   }
 
   return children;

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import AuthFormCard, {
   Field,
   buttonClassName,
@@ -8,10 +8,13 @@ import AuthFormCard, {
 import { useAuth } from "../context/AuthContext.jsx";
 import { ApiError } from "../lib/api.js";
 import { fieldError, validateSignup } from "../lib/validation.js";
+import { safeNextPath } from "../lib/navigation.js";
 
 export default function SignupPage() {
   const { signup } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const nextPath = safeNextPath(searchParams.get("next"), "/");
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -43,7 +46,7 @@ export default function SignupPage() {
         password: form.password,
         confirmPassword: form.confirmPassword,
       });
-      navigate("/", { replace: true });
+      navigate(nextPath, { replace: true });
     } catch (error) {
       if (error instanceof ApiError && error.details) {
         setErrors({
@@ -66,7 +69,10 @@ export default function SignupPage() {
       footer={
         <p>
           Already have an account?{" "}
-          <Link className="font-medium text-teal" to="/login">
+          <Link
+            className="font-medium text-teal"
+            to={`/login${nextPath !== "/" ? `?next=${encodeURIComponent(nextPath)}` : ""}`}
+          >
             Log in
           </Link>
         </p>

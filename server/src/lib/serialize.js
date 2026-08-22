@@ -91,3 +91,56 @@ export function serializeStopActivity(item) {
     activity: serializeActivity(item.activity),
   };
 }
+
+export function serializePublicCity(city) {
+  if (!city) {
+    return null;
+  }
+  return {
+    name: city.name,
+    country: city.country,
+    region: city.region || null,
+  };
+}
+
+export function serializePublicActivity(item) {
+  const startTime = formatClock(item.startTime);
+  const durationMin = item.durationMin ?? item.activity?.durationMin ?? null;
+  return {
+    name: item.customName || item.activity?.name || "Activity",
+    description: item.customDescription || item.activity?.description || item.notes || null,
+    category: item.activity?.type || item.costCategory || "OTHER",
+    scheduledDate: dateOnly(item.scheduledDate),
+    startTime,
+    endTime: addMinutesToClock(startTime, durationMin),
+    durationMin,
+    cost: money(item.cost) ?? 0,
+    notes: item.notes,
+    position: item.position,
+  };
+}
+
+export function serializePublicStop(stop) {
+  return {
+    position: stop.position,
+    startDate: dateOnly(stop.startDate),
+    endDate: dateOnly(stop.endDate),
+    notes: stop.notes,
+    city: serializePublicCity(stop.city),
+    activities: (stop.activities ?? []).map(serializePublicActivity),
+  };
+}
+
+export function serializePublicTrip(trip) {
+  return {
+    name: trip.name,
+    description: trip.description,
+    startDate: dateOnly(trip.startDate),
+    endDate: dateOnly(trip.endDate),
+    coverPhotoUrl: trip.coverPhotoUrl,
+    currency: trip.currency,
+    visibility: trip.visibility,
+    shareSlug: trip.shareSlug,
+    stops: (trip.stops ?? []).map(serializePublicStop),
+  };
+}

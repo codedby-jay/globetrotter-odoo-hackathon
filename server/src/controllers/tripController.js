@@ -1,4 +1,5 @@
 import * as tripService from "../services/tripService.js";
+import { recordShareEvent } from "../services/shareService.js";
 
 export async function listTrips(req, res, next) {
   try {
@@ -40,6 +41,29 @@ export async function deleteTrip(req, res, next) {
   try {
     const result = await tripService.deleteTrip(req.user.id, req.params.id);
     return res.json(result);
+  } catch (err) {
+    return next(err);
+  }
+}
+
+export async function updateVisibility(req, res, next) {
+  try {
+    const trip = await tripService.updateVisibility(
+      req.user.id,
+      req.params.id,
+      req.body.visibility,
+    );
+    return res.json({ trip });
+  } catch (err) {
+    return next(err);
+  }
+}
+
+export async function recordOwnerShare(req, res, next) {
+  try {
+    await tripService.requireOwnedTrip(req.params.id, req.user.id);
+    await recordShareEvent(req.params.id, req.body.event);
+    return res.json({ message: "Share event recorded" });
   } catch (err) {
     return next(err);
   }
